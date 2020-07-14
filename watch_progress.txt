@@ -1,0 +1,405 @@
+cuda
+Starting!!! :D
+None
+[34m[1mwandb[0m: Tracking run with wandb version 0.9.1
+[34m[1mwandb[0m: Wandb version 0.9.2 is available!  To upgrade, please run:
+[34m[1mwandb[0m:  $ pip install wandb --upgrade
+[34m[1mwandb[0m: Run data is saved locally in wandb/run-20200702_161550-1vdolten
+[34m[1mwandb[0m: Syncing run [33msummer-bee-142[0m
+[34m[1mwandb[0m: ⭐️ View project at [34m[4mhttps://app.wandb.ai/halyjo/uncategorized[0m
+[34m[1mwandb[0m: 🚀 View run at [34m[4mhttps://app.wandb.ai/halyjo/uncategorized/runs/1vdolten[0m
+[34m[1mwandb[0m: Run `wandb off` to turn off syncing.
+
+Epoch: 0.
+Loading data ...
+Summary
+/opt/conda/lib/python3.7/site-packages/torch/nn/functional.py:2973: UserWarning: Default upsampling behavior when mode=trilinear is changed to align_corners=False since 0.4.0. Please specify align_corners=True if the old behavior is desired. See the documentation of nn.Upsample for details.
+  "See the documentation of nn.Upsample for details.".format(mode))
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Conv3d-1      [-1, 16, 168, 64, 64]             448
+       BatchNorm3d-2      [-1, 16, 168, 64, 64]              32
+             PReLU-3      [-1, 16, 168, 64, 64]              16
+            Conv3d-4      [-1, 16, 168, 64, 64]           6,928
+       BatchNorm3d-5      [-1, 16, 168, 64, 64]              32
+             PReLU-6      [-1, 16, 168, 64, 64]              16
+            Conv3d-7       [-1, 32, 84, 32, 32]           4,128
+       BatchNorm3d-8       [-1, 32, 84, 32, 32]              64
+             PReLU-9       [-1, 32, 84, 32, 32]              32
+           Conv3d-10       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-11       [-1, 32, 84, 32, 32]              64
+            PReLU-12       [-1, 32, 84, 32, 32]              32
+           Conv3d-13       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-14       [-1, 32, 84, 32, 32]              64
+            PReLU-15       [-1, 32, 84, 32, 32]              32
+           Conv3d-16       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-17       [-1, 32, 84, 32, 32]              64
+            PReLU-18       [-1, 32, 84, 32, 32]              32
+           Conv3d-19       [-1, 64, 42, 16, 16]          16,448
+      BatchNorm3d-20       [-1, 64, 42, 16, 16]             128
+            PReLU-21       [-1, 64, 42, 16, 16]              64
+           Conv3d-22       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-23       [-1, 64, 42, 16, 16]             128
+            PReLU-24       [-1, 64, 42, 16, 16]              64
+           Conv3d-25       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-26       [-1, 64, 42, 16, 16]             128
+            PReLU-27       [-1, 64, 42, 16, 16]              64
+           Conv3d-28       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-29       [-1, 64, 42, 16, 16]             128
+            PReLU-30       [-1, 64, 42, 16, 16]              64
+           Conv3d-31        [-1, 128, 21, 8, 8]          65,664
+      BatchNorm3d-32        [-1, 128, 21, 8, 8]             256
+            PReLU-33        [-1, 128, 21, 8, 8]             128
+           Conv3d-34        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-35        [-1, 128, 21, 8, 8]             256
+            PReLU-36        [-1, 128, 21, 8, 8]             128
+           Conv3d-37        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-38        [-1, 128, 21, 8, 8]             256
+            PReLU-39        [-1, 128, 21, 8, 8]             128
+           Conv3d-40        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-41        [-1, 128, 21, 8, 8]             256
+            PReLU-42        [-1, 128, 21, 8, 8]             128
+           Conv3d-43        [-1, 256, 21, 8, 8]         884,992
+      BatchNorm3d-44        [-1, 256, 21, 8, 8]             512
+            PReLU-45        [-1, 256, 21, 8, 8]             256
+           Conv3d-46        [-1, 256, 21, 8, 8]         884,992
+      BatchNorm3d-47        [-1, 256, 21, 8, 8]             512
+            PReLU-48        [-1, 256, 21, 8, 8]             256
+           Conv3d-49        [-1, 256, 21, 8, 8]       1,769,728
+      BatchNorm3d-50        [-1, 256, 21, 8, 8]             512
+            PReLU-51        [-1, 256, 21, 8, 8]             256
+           Conv3d-52        [-1, 256, 21, 8, 8]       1,769,728
+      BatchNorm3d-53        [-1, 256, 21, 8, 8]             512
+            PReLU-54        [-1, 256, 21, 8, 8]             256
+           Conv3d-55          [-1, 1, 21, 8, 8]             257
+         Upsample-56     [-1, 1, 168, 128, 128]               0
+          Sigmoid-57     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-58      [-1, 128, 42, 16, 16]         262,272
+      BatchNorm3d-59      [-1, 128, 42, 16, 16]             256
+            PReLU-60      [-1, 128, 42, 16, 16]             128
+           Conv3d-61      [-1, 128, 42, 16, 16]         663,680
+      BatchNorm3d-62      [-1, 128, 42, 16, 16]             256
+            PReLU-63      [-1, 128, 42, 16, 16]             128
+           Conv3d-64      [-1, 128, 42, 16, 16]         442,496
+      BatchNorm3d-65      [-1, 128, 42, 16, 16]             256
+            PReLU-66      [-1, 128, 42, 16, 16]             128
+           Conv3d-67      [-1, 128, 42, 16, 16]         442,496
+      BatchNorm3d-68      [-1, 128, 42, 16, 16]             256
+            PReLU-69      [-1, 128, 42, 16, 16]             128
+           Conv3d-70        [-1, 1, 42, 16, 16]             129
+         Upsample-71     [-1, 1, 168, 128, 128]               0
+          Sigmoid-72     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-73       [-1, 64, 84, 32, 32]          65,600
+      BatchNorm3d-74       [-1, 64, 84, 32, 32]             128
+            PReLU-75       [-1, 64, 84, 32, 32]              64
+           Conv3d-76       [-1, 64, 84, 32, 32]         165,952
+      BatchNorm3d-77       [-1, 64, 84, 32, 32]             128
+            PReLU-78       [-1, 64, 84, 32, 32]              64
+           Conv3d-79       [-1, 64, 84, 32, 32]         110,656
+      BatchNorm3d-80       [-1, 64, 84, 32, 32]             128
+            PReLU-81       [-1, 64, 84, 32, 32]              64
+           Conv3d-82       [-1, 64, 84, 32, 32]         110,656
+      BatchNorm3d-83       [-1, 64, 84, 32, 32]             128
+            PReLU-84       [-1, 64, 84, 32, 32]              64
+           Conv3d-85        [-1, 1, 84, 32, 32]              65
+         Upsample-86     [-1, 1, 168, 128, 128]               0
+          Sigmoid-87     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-88      [-1, 32, 168, 64, 64]          16,416
+      BatchNorm3d-89      [-1, 32, 168, 64, 64]              64
+            PReLU-90      [-1, 32, 168, 64, 64]              32
+           Conv3d-91      [-1, 32, 168, 64, 64]          41,504
+      BatchNorm3d-92      [-1, 32, 168, 64, 64]              64
+            PReLU-93      [-1, 32, 168, 64, 64]              32
+           Conv3d-94      [-1, 32, 168, 64, 64]          27,680
+      BatchNorm3d-95      [-1, 32, 168, 64, 64]              64
+            PReLU-96      [-1, 32, 168, 64, 64]              32
+           Conv3d-97       [-1, 1, 168, 64, 64]              33
+         Upsample-98     [-1, 1, 168, 128, 128]               0
+          Sigmoid-99     [-1, 1, 168, 128, 128]               0
+================================================================
+Total params: 9,503,892
+Trainable params: 9,503,892
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 2.62
+Forward/backward pass size (MB): 3182.25
+Params size (MB): 36.25
+Estimated Total Size (MB): 3221.13
+----------------------------------------------------------------
+Training ...
+Testing ...
+Epoch: 1.
+Loading data ...
+Training ...
+cuda
+Starting!!! :D
+None
+[34m[1mwandb[0m: Tracking run with wandb version 0.9.1
+[34m[1mwandb[0m: Wandb version 0.9.2 is available!  To upgrade, please run:
+[34m[1mwandb[0m:  $ pip install wandb --upgrade
+[34m[1mwandb[0m: Run data is saved locally in wandb/run-20200702_161550-1vdolten
+[34m[1mwandb[0m: Syncing run [33msummer-bee-142[0m
+[34m[1mwandb[0m: ⭐️ View project at [34m[4mhttps://app.wandb.ai/halyjo/uncategorized[0m
+[34m[1mwandb[0m: 🚀 View run at [34m[4mhttps://app.wandb.ai/halyjo/uncategorized/runs/1vdolten[0m
+[34m[1mwandb[0m: Run `wandb off` to turn off syncing.
+
+Epoch: 0.
+Loading data ...
+Summary
+/opt/conda/lib/python3.7/site-packages/torch/nn/functional.py:2973: UserWarning: Default upsampling behavior when mode=trilinear is changed to align_corners=False since 0.4.0. Please specify align_corners=True if the old behavior is desired. See the documentation of nn.Upsample for details.
+  "See the documentation of nn.Upsample for details.".format(mode))
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Conv3d-1      [-1, 16, 168, 64, 64]             448
+       BatchNorm3d-2      [-1, 16, 168, 64, 64]              32
+             PReLU-3      [-1, 16, 168, 64, 64]              16
+            Conv3d-4      [-1, 16, 168, 64, 64]           6,928
+       BatchNorm3d-5      [-1, 16, 168, 64, 64]              32
+             PReLU-6      [-1, 16, 168, 64, 64]              16
+            Conv3d-7       [-1, 32, 84, 32, 32]           4,128
+       BatchNorm3d-8       [-1, 32, 84, 32, 32]              64
+             PReLU-9       [-1, 32, 84, 32, 32]              32
+           Conv3d-10       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-11       [-1, 32, 84, 32, 32]              64
+            PReLU-12       [-1, 32, 84, 32, 32]              32
+           Conv3d-13       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-14       [-1, 32, 84, 32, 32]              64
+            PReLU-15       [-1, 32, 84, 32, 32]              32
+           Conv3d-16       [-1, 32, 84, 32, 32]          27,680
+      BatchNorm3d-17       [-1, 32, 84, 32, 32]              64
+            PReLU-18       [-1, 32, 84, 32, 32]              32
+           Conv3d-19       [-1, 64, 42, 16, 16]          16,448
+      BatchNorm3d-20       [-1, 64, 42, 16, 16]             128
+            PReLU-21       [-1, 64, 42, 16, 16]              64
+           Conv3d-22       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-23       [-1, 64, 42, 16, 16]             128
+            PReLU-24       [-1, 64, 42, 16, 16]              64
+           Conv3d-25       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-26       [-1, 64, 42, 16, 16]             128
+            PReLU-27       [-1, 64, 42, 16, 16]              64
+           Conv3d-28       [-1, 64, 42, 16, 16]         110,656
+      BatchNorm3d-29       [-1, 64, 42, 16, 16]             128
+            PReLU-30       [-1, 64, 42, 16, 16]              64
+           Conv3d-31        [-1, 128, 21, 8, 8]          65,664
+      BatchNorm3d-32        [-1, 128, 21, 8, 8]             256
+            PReLU-33        [-1, 128, 21, 8, 8]             128
+           Conv3d-34        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-35        [-1, 128, 21, 8, 8]             256
+            PReLU-36        [-1, 128, 21, 8, 8]             128
+           Conv3d-37        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-38        [-1, 128, 21, 8, 8]             256
+            PReLU-39        [-1, 128, 21, 8, 8]             128
+           Conv3d-40        [-1, 128, 21, 8, 8]         442,496
+      BatchNorm3d-41        [-1, 128, 21, 8, 8]             256
+            PReLU-42        [-1, 128, 21, 8, 8]             128
+           Conv3d-43        [-1, 256, 21, 8, 8]         884,992
+      BatchNorm3d-44        [-1, 256, 21, 8, 8]             512
+            PReLU-45        [-1, 256, 21, 8, 8]             256
+           Conv3d-46        [-1, 256, 21, 8, 8]         884,992
+      BatchNorm3d-47        [-1, 256, 21, 8, 8]             512
+            PReLU-48        [-1, 256, 21, 8, 8]             256
+           Conv3d-49        [-1, 256, 21, 8, 8]       1,769,728
+      BatchNorm3d-50        [-1, 256, 21, 8, 8]             512
+            PReLU-51        [-1, 256, 21, 8, 8]             256
+           Conv3d-52        [-1, 256, 21, 8, 8]       1,769,728
+      BatchNorm3d-53        [-1, 256, 21, 8, 8]             512
+            PReLU-54        [-1, 256, 21, 8, 8]             256
+           Conv3d-55          [-1, 1, 21, 8, 8]             257
+         Upsample-56     [-1, 1, 168, 128, 128]               0
+          Sigmoid-57     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-58      [-1, 128, 42, 16, 16]         262,272
+      BatchNorm3d-59      [-1, 128, 42, 16, 16]             256
+            PReLU-60      [-1, 128, 42, 16, 16]             128
+           Conv3d-61      [-1, 128, 42, 16, 16]         663,680
+      BatchNorm3d-62      [-1, 128, 42, 16, 16]             256
+            PReLU-63      [-1, 128, 42, 16, 16]             128
+           Conv3d-64      [-1, 128, 42, 16, 16]         442,496
+      BatchNorm3d-65      [-1, 128, 42, 16, 16]             256
+            PReLU-66      [-1, 128, 42, 16, 16]             128
+           Conv3d-67      [-1, 128, 42, 16, 16]         442,496
+      BatchNorm3d-68      [-1, 128, 42, 16, 16]             256
+            PReLU-69      [-1, 128, 42, 16, 16]             128
+           Conv3d-70        [-1, 1, 42, 16, 16]             129
+         Upsample-71     [-1, 1, 168, 128, 128]               0
+          Sigmoid-72     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-73       [-1, 64, 84, 32, 32]          65,600
+      BatchNorm3d-74       [-1, 64, 84, 32, 32]             128
+            PReLU-75       [-1, 64, 84, 32, 32]              64
+           Conv3d-76       [-1, 64, 84, 32, 32]         165,952
+      BatchNorm3d-77       [-1, 64, 84, 32, 32]             128
+            PReLU-78       [-1, 64, 84, 32, 32]              64
+           Conv3d-79       [-1, 64, 84, 32, 32]         110,656
+      BatchNorm3d-80       [-1, 64, 84, 32, 32]             128
+            PReLU-81       [-1, 64, 84, 32, 32]              64
+           Conv3d-82       [-1, 64, 84, 32, 32]         110,656
+      BatchNorm3d-83       [-1, 64, 84, 32, 32]             128
+            PReLU-84       [-1, 64, 84, 32, 32]              64
+           Conv3d-85        [-1, 1, 84, 32, 32]              65
+         Upsample-86     [-1, 1, 168, 128, 128]               0
+          Sigmoid-87     [-1, 1, 168, 128, 128]               0
+  ConvTranspose3d-88      [-1, 32, 168, 64, 64]          16,416
+      BatchNorm3d-89      [-1, 32, 168, 64, 64]              64
+            PReLU-90      [-1, 32, 168, 64, 64]              32
+           Conv3d-91      [-1, 32, 168, 64, 64]          41,504
+      BatchNorm3d-92      [-1, 32, 168, 64, 64]              64
+            PReLU-93      [-1, 32, 168, 64, 64]              32
+           Conv3d-94      [-1, 32, 168, 64, 64]          27,680
+      BatchNorm3d-95      [-1, 32, 168, 64, 64]              64
+            PReLU-96      [-1, 32, 168, 64, 64]              32
+           Conv3d-97       [-1, 1, 168, 64, 64]              33
+         Upsample-98     [-1, 1, 168, 128, 128]               0
+          Sigmoid-99     [-1, 1, 168, 128, 128]               0
+================================================================
+Total params: 9,503,892
+Trainable params: 9,503,892
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 2.62
+Forward/backward pass size (MB): 3182.25
+Params size (MB): 36.25
+Estimated Total Size (MB): 3221.13
+----------------------------------------------------------------
+Training ...
+Testing ...
+Epoch: 1.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 2.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 3.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 4.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 5.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 6.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 7.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 8.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 9.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 10.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 11.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 12.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 13.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 14.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 15.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 16.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 17.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 18.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 19.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 20.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 21.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 22.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 23.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 24.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 25.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 26.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 27.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 28.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 29.
+Loading data ...
+Training ...
+Testing ...
+Epoch: 30.
+Loading data ...
+Training ...
+Testing ...
+
+[34m[1mwandb[0m: Waiting for W&B process to finish, PID 56
+[34m[1mwandb[0m: Program ended successfully.
+[34m[1mwandb[0m: Run summary:
+[34m[1mwandb[0m:    train_iou 0.9144729375839233
+[34m[1mwandb[0m:         loss 0.09642654657363892
+[34m[1mwandb[0m:    train_FNR 0.01394948922097683
+[34m[1mwandb[0m:     _runtime 5626.029018640518
+[34m[1mwandb[0m:        _step 4060
+[34m[1mwandb[0m:   train_dice 0.9553260803222656
+[34m[1mwandb[0m:    train_FPR 0.07157755643129349
+[34m[1mwandb[0m:        epoch 30.99236641221374
+[34m[1mwandb[0m:   _timestamp 1593712173.5437763
+[34m[1mwandb[0m:     test_FNR 0.031078539788722992
+[34m[1mwandb[0m:     test_FPR 0.12514466047286987
+[34m[1mwandb[0m:    test_dice 0.9152700304985046
+[34m[1mwandb[0m:     test_iou 0.8437768220901489
+[34m[1mwandb[0m: Syncing 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+[34m[1mwandb[0m: - 0.01MB of 0.01MB uploaded (0.00MB deduped)[34m[1mwandb[0m:                                                                                
+[34m[1mwandb[0m: Synced summer-bee-142: https://app.wandb.ai/halyjo/uncategorized/runs/1vdolten
