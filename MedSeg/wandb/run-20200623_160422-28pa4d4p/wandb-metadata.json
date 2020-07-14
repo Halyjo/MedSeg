@@ -1,0 +1,23 @@
+{
+    "root": "C:/Users/Haral/Documents/GitHub/MedSeg",
+    "program": "main.py",
+    "git": {
+        "remote": "https://github.com/Halyjo/MedSeg.git",
+        "commit": "262ec0012b846c3e7809d9852eb6b5120cea5831"
+    },
+    "email": "35629262+Halyjo@users.noreply.github.com",
+    "startedAt": "2020-06-23T16:04:22.957419",
+    "host": "DESKTOP-CMLV51S",
+    "username": "Haral",
+    "executable": "C:\\Users\\Haral\\Anaconda3\\envs\\envmedseg\\python.exe",
+    "os": "Windows-10-10.0.18362-SP0",
+    "python": "3.7.5",
+    "cpu_count": 8,
+    "args": [],
+    "state": "killed",
+    "jobType": null,
+    "mode": "run",
+    "project": "MedSeg",
+    "heartbeatAt": "2020-06-23T16:04:29.347000",
+    "exitcode": 255
+}
