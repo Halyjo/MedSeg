@@ -1,4 +1,5 @@
 """
+Configuration file. 
 
 Modified verison of code copied from source: 
     https://github.com/assassint2017/MICCAI-LITS2017
@@ -18,7 +19,10 @@ config = dict(
     dstpath = 'datasets/preprocessed_quarter_size/',
     ## Path to destination of preprocessing with 2d outputs.
     dst_2d_path = 'datasets/preprocessed_2d/',
-    ### Preprocessing ###,
+    train_proportion = 0.8,
+    ##########################,
+    ###### Preprocessing #####,
+    ##########################,
     ## Clipping values to consentrate on relevant range,
     ## https://www.google.com/search?q=typical+CT+HU+range+for+liver&oq=typical+CT+HU+range+for+liver&aqs=chrome..69i57.8870j0j4&sourceid=chrome&ie=UTF-8,
     ## (liver values usually revelves45-65 HU ?),
@@ -42,16 +46,16 @@ config = dict(
     num_workers = 4,
     ## DataLoader does not support any more yet,
     batch_size = 5,
-    max_epochs = 21,
+    max_epochs = 100,
     ## Optimizer and loss,
     optim_opts = {'lr': 0.01},
-    lr_milestones = [10, 20],
-    lr_milestone_scalar = 0.1,
+    # lr_milestones = [10, 20],
+    # lr_milestone_scalar = 0.1,
     lr_decay_rate = 0.90,
     loss_opts = {}, # Weights
     ## Store model every n-th epoch
     checkpoint_interval = 2,
-    init_2d_model_state = "datasets/saved_states/VNet2d_runid_3000_epoch100.pth",
+    init_2d_model_state = None, # "datasets/saved_states/VNet2d_runid_3000_epoch100.pth",
     init_model_state = None, # "datasets/saved_states/ResUnet_runid_12_epoch30.pth",
 )
 
@@ -74,15 +78,11 @@ config.update(
     dst_test_pred_liver_path = os.path.join(config["dstpath"], 'test/pred_liver/'),
     dst_test_pred_lesion_path = os.path.join(config["dstpath"], 'test/pred_lesion/'),
     ## For 2d
-    dst2d_train_slices_path = os.path.join(config["dst_2d_path"], 'train/slices/'),
-    dst2d_test_slices_path = os.path.join(config["dst_2d_path"], 'test/slices/'),
-    dst2d_train_labels_liver_path = os.path.join(config["dst_2d_path"], 'train/labels_liver/'),
-    dst2d_train_labels_lesion_path = os.path.join(config["dst_2d_path"], 'train/labels_lesion/'),
-    dst2d_test_labels_liver_path = os.path.join(config["dst_2d_path"], 'test/labels_liver/'),
-    dst2d_test_labels_lesion_path = os.path.join(config["dst_2d_path"], 'test/labels_lesion/'),
-    dst2d_train_pred_liver_path = os.path.join(config["dst_2d_path"], 'train/pred_liver/'),
-    dst2d_train_pred_lesion_path = os.path.join(config["dst_2d_path"], 'train/pred_lesion/'),
-    dst2d_test_pred_liver_path = os.path.join(config["dst_2d_path"], 'test/pred_liver/'),
-    dst2d_test_pred_lesion_path = os.path.join(config["dst_2d_path"], 'test/pred_lesion/'),
+    dst2d_slices_path = os.path.join(config["dst_2d_path"], 'slices/'),
+    dst2d_labels_liver_path = os.path.join(config["dst_2d_path"], 'labels_liver/'),
+    dst2d_labels_lesion_path = os.path.join(config["dst_2d_path"], 'labels_lesion/'),
+    dst2d_pred_liver_path = os.path.join(config["dst_2d_path"], 'pred_liver/'),
+    dst2d_pred_lesion_path = os.path.join(config["dst_2d_path"], 'pred_lesion/'),
+    dst2d_fig_path = os.path.join(config["dst_2d_path"], "figures/")
     )
 )

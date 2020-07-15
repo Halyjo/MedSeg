@@ -1,10 +1,11 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: medseg3001
+  name: medseg2
 spec:
   template:
     spec:
+      hostIPC: true
       containers:
       - name: medseg
         image: "halyjo/medseg:v1"

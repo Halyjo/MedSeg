@@ -31,7 +31,6 @@ def controller_3d(mode: str, focus: str):
     """
     print("Starting!!! :D")
     
-    breakpoint()
     ## Load data sets
     tr_path = os.path.join(config["dstpath"], "train/")
     te_path = os.path.join(config["dstpath"], "test/")
