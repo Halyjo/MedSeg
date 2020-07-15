@@ -53,8 +53,8 @@ def train_one_epoch(net, optimizer, critic, dataloader,
 
     for i, sample in enumerate(dataloader):
         optimizer.zero_grad()
-        vol = sample['vol'].to(device)
-        lab = sample['lab'].to(device)
+        vol = sample['vol'].to(device, non_blocking=True)
+        lab = sample['lab'].to(device, non_blocking=True)
         outputs = net(vol)
         pred = outputs[-1]
         losses = []

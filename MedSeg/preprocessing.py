@@ -27,9 +27,9 @@ def preprocess2d(mode='train'):
     ## Generator to generate indices for slices.
     numgen = counter()
     dirpaths = [
-        config[f"dst2d_{mode}_labels_liver_path"],
-        config[f"dst2d_{mode}_labels_lesion_path"],
-        config[f"dst2d_{mode}_slices_path"],
+        config[f"dst2d_labels_liver_path"],
+        config[f"dst2d_labels_lesion_path"],
+        config[f"dst2d_slices_path"],
     ]
     for p in dirpaths:
         if not os.path.exists(p):
@@ -73,11 +73,11 @@ def preprocess2d(mode='train'):
             idx = next(numgen)
             slice_filename = "slice_{:05}".format(idx)
             segmentation_filename = "segmentation_{:05}".format(idx)
-            np.save(os.path.join(config[f"dst2d_{mode}_slices_path"], slice_filename), 
+            np.save(os.path.join(config[f"dst2d_slices_path"], slice_filename), 
                     ct_array[i, ...])
-            np.save(os.path.join(config[f"dst2d_{mode}_labels_liver_path"], segmentation_filename),
+            np.save(os.path.join(config[f"dst2d_labels_liver_path"], segmentation_filename),
                     liver_array[i, ...])
-            np.save(os.path.join(config[f"dst2d_{mode}_labels_lesion_path"], segmentation_filename),
+            np.save(os.path.join(config[f"dst2d_labels_lesion_path"], segmentation_filename),
                     lesion_array[i, ...])
 
     print("Finished {} preprocessing in: {:02}s".format(mode, time() - start))

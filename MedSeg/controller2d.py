@@ -31,15 +31,17 @@ def controller_2d(mode: str, focus: str):
     Controller function for training and testing VNet
     on Volumetric CT images of livers with and without lesions.
     """
-    print("Starting!!! :D")
+    print("Starting...")
     
-    ## Load data sets
-    tr_path = os.path.join(config["dst_2d_path"], "train/")
-    te_path = os.path.join(config["dst_2d_path"], "test/")
-
-    tr_set = LiTSDataset2d(tr_path, focus=focus, max_length=None)
-    te_set = LiTSDataset2d(te_path, focus=focus, max_length=None)
+    ## Load data
+    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=focus)
+    workers = 2
     
+    ## Split data into train and test
+    train_proportion = config["train_proportion"]
+    len_train = int(len(full_dataset) * train_proportion)
+    len_test = len(full_dataset) - len_train
+    tr_set, te_set = torch.utils.data.random_split(full_dataset, (len_train, len_test))
     ## Init and load model if specified in config
     net = VNet2d(drop_rate=config["drop_rate"])
     # net = DeepVNet2d(drop_rate=config["drop_rate"])
@@ -57,16 +59,16 @@ def controller_2d(mode: str, focus: str):
     if mode == 'test':
         net.eval()
 
-        tr_dataloader = DataLoader(tr_set)
-        if not os.path.exists(config[f"dst2d_train_pred_{focus}_path"]):
-            os.mkdir(config[f"dst2d_train_pred_{focus}_path"])
+        tr_dataloader = DataLoader(tr_set, num_workers=workers, pin_memory=True)
+        if not os.path.exists(config[f"dst2d_pred_{focus}_path"]):
+            os.mkdir(config[f"dst2d_pred_{focus}_path"])
         train_info = test_one_epoch(net, tr_dataloader, device, 
-                                    1, 1, wandblog=False, dst_path=config[f"dst2d_train_pred_{focus}_path"])
+                                    1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{focus}_path"])
         tr_df = pd.DataFrame(train_info)
         tr_df.to_csv(os.path.join(config["dstpath"], 
                                   "tr_metrics_{}_{}_run{:02}.csv".format(mode, focus, config["runid"])))
 
-        te_dataloader = DataLoader(te_set)
+        te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
         test_info = test_one_epoch(net, te_dataloader, device, 
                                    1, 1, wandblog=False, dst_path=None)
         te_df = pd.DataFrame(test_info)
@@ -90,8 +92,8 @@ def controller_2d(mode: str, focus: str):
 
         ## Make dataloaders
         print("Loading data ...")
-        tr_dataloader = DataLoader(tr_set, batch_size=config["batch_size"], shuffle=True)
-        te_dataloader = DataLoader(te_set, batch_size=config["batch_size"], shuffle=True)
+        tr_dataloader = DataLoader(tr_set, batch_size=config["batch_size"], shuffle=True, num_workers=workers, pin_memory=True)
+        te_dataloader = DataLoader(te_set, batch_size=config["batch_size"], shuffle=True, num_workers=workers, pin_memory=True)
 
         epochlength = len(tr_dataloader) + len(te_dataloader)
 
@@ -109,15 +111,25 @@ def controller_2d(mode: str, focus: str):
         ## Get dice global for testing
         test_dice_global = np.sum(test_info['test_dice_numerator']) / np.sum(test_info['test_dice_denominator'])
         print("Global test dice at epoch {}: {}".format(epoch, test_dice_global))
+
         wandb.log({"test_dice_global": test_dice_global})
 
         scheduler.step()
         
+        ## Checkpoint storage (with prediction exmple)
         netname = str(type(net)).strip("'>").split(".")[1]
-        state_dict_path = "datasets/saved_states/{}_runid_{:02}_epoch{:02}.pth".format(netname, config["runid"], epoch)
-        if epoch % (config["checkpoint_interval"] - 1)==0 and epoch != 0:
+        saved_states_folder = os.path.join("datasets/saved_states/runid_{:03}".format(config["runid"]))
+        if epoch % (config["checkpoint_interval"] - 1) == 0 and epoch != 0:
+            if not os.path.exists(saved_states_folder):
+                os.mkdir(saved_states_folder)
+            state_name = "{}_runid_{:02}_epoch{:02}.pth".format(netname, config["runid"], epoch)
+            state_dict_path = os.path.join(saved_states_folder, state_name)
             torch.save(net.state_dict(), state_dict_path)
-        print() ## Blank line
+            ## Store example prediction
+            ex_loader = DataLoader(LiTSDataset2d(te_set, focus=focus, max_length=1), num_workers=workers, pin_memory=True)
+            test_one_epoch(net, ex_loader, device, epoch, epochlength, 
+                           wandblog=False, dst_format='png', dst_path=config["dst2d_fig_path"])
+        print()
 
 
 if __name__ == "__main__":

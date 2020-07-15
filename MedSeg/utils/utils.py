@@ -75,28 +75,43 @@ def load_slice(path):
     return np.load(path)
 
 
-def store(img_batch, dst: str, counter, format='npy'):
+def store(img_batch, dst: str, idx: list, format=None):
     """Store list of 3d torch.tensors to dst as SimpleITK images.
 
         Arguments
         ---------
             img_batch : torch.Tensor
                 shape: (N, C, d1, d2, ..., dn)
+            dst : str path
+                Path at which to store prediction.
+            idx : list
+                Index of stored file. Should be the same 
+                index as that of the corresponding input image.
+            format : ['nii', 'npy', 'png']
+                Default: 'npy'
+                How to store.
+                'nii': Converted to SimpleITK image.
+                'npy': Stored as numpy array.
+                'png': png image of output.
     """
-    format_choices = ['nii', 'npy']
+    format_choices = ['nii', 'npy', 'png']
+    format = 'npy' if format is None else format
     assert format in format_choices, f"format must be among: {format_choices}"
 
     for i in range(img_batch.shape[0]):
         pred = img_batch[i, ...]
         pred = pred.squeeze(dim=0)
         pred_np = pred.detach().cpu().numpy()
-        name = "prediction_{:05}".format(next(counter))
+        name = "prediction_{:05}".format(idx[i])
         if format == 'nii':
             name = name + ".nii"
             pred_sitk = sitk.GetImageFromArray(pred_np)
             sitk.WriteImage(pred_sitk, os.path.join(dst, name))
         elif format == 'npy':
             np.save(os.path.join(dst, name), pred_np)
+        elif format == 'png':
+            plt.imshow(pred_np)
+            plt.savefig(os.path.join(dst, name, ".png"), dpi=300)
 
         print("Stored {} in {}".format(name, dst))
             

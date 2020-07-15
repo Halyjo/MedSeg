@@ -4,7 +4,7 @@ import wandb
 import torch
 
 
-def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None): # , return_pred=False
+def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None, dst_format=None): # , return_pred=False
     """Go through testing data once, measure performance
     and send result to weights and biases
 
@@ -27,6 +27,9 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
             [dst_path] : str path
                 Default: None, i.e. Do not store preductions.
                 Path to destination folder to store predictions at.
+            [dst_format] : str
+                Format of storage. Options are decided in utils.store().
+
 
         Returns
         -------
@@ -47,10 +50,10 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
         "test_dice_denominator": [],
         "test_conmat": [],
     }
-    numgen = utils.counter()
+
     for i, sample in enumerate(dataloader):
-        vol = sample['vol'].to(device)
-        lab = sample['lab'].to(device)
+        vol = sample['vol'].to(device, non_blocking=True)
+        lab = sample['lab'].to(device, non_blocking=True)
         pred = torch.round(net(vol))
         # onehot_lab = utils.one_hot(lab, nclasses=3)
 
@@ -71,7 +74,8 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
 
         ## Store predictions
         if dst_path is not None:
-            utils.store(pred, dst_path, numgen)
+            utils.store(pred, dst_path, sample['store_idx'], format=dst_format)
+
     return cuminfodict
 
         

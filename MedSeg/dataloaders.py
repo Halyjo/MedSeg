@@ -1,10 +1,9 @@
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, Sampler
 from datetime import datetime
 import torch
 import os
 from utils import load_volume, load_slice
-# from tqdm import tqdm
-import config
+from config import config
 
 
 class Testset(Dataset):
@@ -84,7 +83,7 @@ class LiTSDataset(Dataset):
 class LiTSDataset2d(Dataset):
     """LiTS dataset converted to separate 2d slices."""
     _options_focus = ['liver', 'lesion']
-    def __init__(self, datapath, focus="liver", max_length=None, transform=None):
+    def __init__(self, datapath, focus="liver", max_length=None, transform=None, return_indices=False):
         """
             Arguments
             ---------
@@ -109,6 +108,7 @@ class LiTSDataset2d(Dataset):
         self.datapath = datapath
         self.slicepath = os.path.join(datapath, "slices/")
         self.slicenames = os.listdir(self.slicepath)
+        self.store_indices = [int(name.strip(".npy").split("_")[1]) for name in self.slicenames]
         self.max_length = max_length
         self.focus = focus
         self.labpath = os.path.join(datapath, f"labels_{focus}/")
@@ -137,19 +137,25 @@ class LiTSDataset2d(Dataset):
         img = torch.tensor(img, dtype=torch.float32).unsqueeze(dim=0)
         lab = torch.tensor(lab, dtype=torch.float32).unsqueeze(dim=0)
         
-        sample = {'vol': img, 'lab': lab}
+        sample = {'vol': img, 'lab': lab, 'store_idx': self.store_indices[idx]}
 
         if self.transform:
             self.transform(sample)
         return sample
 
 
-if __name__ == "__main__":
-    dataset = Testset(length=5)
-    dataset = LiTSDataset2d("datasets/preprocessed_2d/train/", max_length=30)
-    dataloader = DataLoader(dataset, batch_size=20)
+def test_LiTSDataset2d():
+    batch_size = 3
+    config["runid"] = 0
+    dataset = LiTSDataset2d("datasets/preprocessed_2d/", max_length=25)
+    dataloader = DataLoader(dataset, batch_size=batch_size)
     
-    ## View data with dataloader
+    ## A few assertions about shapes of output
     sample = next(iter(dataloader))
-    vol, lab = sample.values()
-    print(vol.shape, lab.shape)
+    vol, lab, idx = sample.values()
+    assert vol.size() == lab.size() == torch.Size([batch_size, 1, 512, 512]), "Issues with LiTSDataset2d"
+    assert len(idx) == vol.shape[0] == lab.shape[0], "Batch sizes in dataset do not match."
+
+
+if __name__ == "__main__":
+    test_LiTSDataset2d()

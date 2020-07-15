@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utils import load_volume
 
+from graphviz import Digraph
+import re
+import torch
+import torch.nn.functional as F
+from torch.autograd import Variable
+import torchvision.models as models
+
 
 class ImageViewer():
     _focus_options = ['liver', 'lesion']
