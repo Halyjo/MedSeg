@@ -75,7 +75,7 @@ def load_slice(path):
     return np.load(path)
 
 
-def store(img_batch, dst: str, idx: list, format=None):
+def store(img_batch, dst: str, idx: list, format=None, epoch:int=None, focus:str=None):
     """Store list of 3d torch.tensors to dst as SimpleITK images.
 
         Arguments
@@ -87,12 +87,15 @@ def store(img_batch, dst: str, idx: list, format=None):
             idx : list
                 Index of stored file. Should be the same 
                 index as that of the corresponding input image.
-            format : ['nii', 'npy', 'png']
+            [format] : ['nii', 'npy', 'png']
                 Default: 'npy'
                 How to store.
                 'nii': Converted to SimpleITK image.
                 'npy': Stored as numpy array.
                 'png': png image of output.
+            [epoch], [focus]
+                If epoch is specified it will be included in 
+                the file name of the stored images.
     """
     format_choices = ['nii', 'npy', 'png']
     format = 'npy' if format is None else format
@@ -103,6 +106,10 @@ def store(img_batch, dst: str, idx: list, format=None):
         pred = pred.squeeze(dim=0)
         pred_np = pred.detach().cpu().numpy()
         name = "prediction_{:05}".format(idx[i])
+        if epoch is not None:
+            name = name + f"_epoch{epoch:03}"
+        if focus is not None:
+            name = name + f"_focus{focus}"
         if format == 'nii':
             name = name + ".nii"
             pred_sitk = sitk.GetImageFromArray(pred_np)
@@ -110,8 +117,9 @@ def store(img_batch, dst: str, idx: list, format=None):
         elif format == 'npy':
             np.save(os.path.join(dst, name), pred_np)
         elif format == 'png':
-            plt.imshow(pred_np)
-            plt.savefig(os.path.join(dst, name, ".png"), dpi=300)
+            plt.imshow(pred_np, cmap='gray')
+            plt.savefig(os.path.join(dst, name), dpi=300, format='png')
+            plt.close()
 
         print("Stored {} in {}".format(name, dst))
             

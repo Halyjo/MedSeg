@@ -12,7 +12,9 @@ import os
 #######################################
 config = dict(
     project="MedSeg",
-    runid = None,
+    runid = 0,
+    focus = 'liver',  ## Must be 'liver' or 'lesion'
+    mode = 'train',
     ## path to raw LiTS data,
     srcpath = 'datasets/original/',
     ## path to destination of preprocessing,

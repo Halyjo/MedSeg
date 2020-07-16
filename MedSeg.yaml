@@ -1,7 +1,7 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: medseg2
+  name: medseglesion
 spec:
   template:
     spec:

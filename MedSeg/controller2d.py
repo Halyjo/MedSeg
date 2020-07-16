@@ -26,7 +26,7 @@ device = ('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 
-def controller_2d(mode: str, focus: str):
+def controller_2d():
     """
     Controller function for training and testing VNet
     on Volumetric CT images of livers with and without lesions.
@@ -34,7 +34,7 @@ def controller_2d(mode: str, focus: str):
     print("Starting...")
     
     ## Load data
-    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=focus)
+    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"])
     workers = 2
     
     ## Split data into train and test
@@ -47,33 +47,34 @@ def controller_2d(mode: str, focus: str):
     # net = DeepVNet2d(drop_rate=config["drop_rate"])
     # net = NestedUNet(2, 1)
 
+    ## Load model if specified in config
     print(config["init_2d_model_state"])
     if config["init_2d_model_state"] is not None:
         print("Attemt fetching of state dict at: ", config["init_2d_model_state"])
-        state_dict = torch.load(config["init_2d_model_state"])
+        state_dict = torch.load(config["init_2d_model_state"])["model_state_dict"]
         net.load_state_dict(state_dict)
         print("Successfully loaded net")
     net.to(device)
     
     ## Get resulting metrics and store predictions
-    if mode == 'test':
+    if config["mode"] == 'test':
         net.eval()
 
         tr_dataloader = DataLoader(tr_set, num_workers=workers, pin_memory=True)
-        if not os.path.exists(config[f"dst2d_pred_{focus}_path"]):
-            os.mkdir(config[f"dst2d_pred_{focus}_path"])
+        if not os.path.exists(config[f"dst2d_pred_{config["focus"]}_path"]):
+            os.mkdir(config[f"dst2d_pred_{config["focus"]}_path"])
         train_info = test_one_epoch(net, tr_dataloader, device, 
-                                    1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{focus}_path"])
+                                    1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config["focus"]}_path"])
         tr_df = pd.DataFrame(train_info)
         tr_df.to_csv(os.path.join(config["dstpath"], 
-                                  "tr_metrics_{}_{}_run{:02}.csv".format(mode, focus, config["runid"])))
+                                  "tr_metrics_{}_{}_run{:02}.csv".format(config["mode"], config["focus"], config["runid"])))
 
         te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
         test_info = test_one_epoch(net, te_dataloader, device, 
                                    1, 1, wandblog=False, dst_path=None)
         te_df = pd.DataFrame(test_info)
         te_df.to_csv(os.path.join(config["dstpath"], 
-                                  "te_metrics_{}_{}_run{:02}.csv".format(mode, focus, config["runid"])))
+                                  "te_metrics_{}_{}_run{:02}.csv".format(config["mode"], config["focus"], config["runid"])))
         exit()
 
     ## Monitor process with weights and biases
@@ -100,33 +101,48 @@ def controller_2d(mode: str, focus: str):
         print("Training ...")
         train_info = train_one_epoch(net, optimizer, critic, tr_dataloader, device, epoch, epochlength)
 
-        ## Get dice global for training
+        ## Get dice global and mean iou for training
+        train_mean_iou = np.mean(train_info['train_iou'])
+        print("train mean iou: {}".format(train_mean_iou))
         train_dice_global = np.sum(train_info['train_dice_numerator']) / np.sum(train_info['train_dice_denominator'])
         print("Global train dice at epoch {}: {}".format(epoch, train_dice_global))
-        wandb.log({"train_dice_global": train_dice_global})
+
+        wandb.log({"train_dice_global": train_dice_global, "train_mean_iou": train_mean_iou})
 
         print("Testing ...")
         test_info = test_one_epoch(net, te_dataloader, device, epoch + len(tr_dataloader)/epochlength, epochlength)
 
-        ## Get dice global for testing
+        ## Get dice global and mean iou for testing
+        test_mean_iou = np.mean(test_info['test_iou'])
+        print("test mean iou: {}".format(test_mean_iou))
         test_dice_global = np.sum(test_info['test_dice_numerator']) / np.sum(test_info['test_dice_denominator'])
         print("Global test dice at epoch {}: {}".format(epoch, test_dice_global))
 
-        wandb.log({"test_dice_global": test_dice_global})
+        wandb.log({"test_dice_global": test_dice_global, "test_mean_iou": test_mean_iou})
 
         scheduler.step()
         
         ## Checkpoint storage (with prediction exmple)
         netname = str(type(net)).strip("'>").split(".")[1]
-        saved_states_folder = os.path.join("datasets/saved_states/runid_{:03}".format(config["runid"]))
-        if epoch % (config["checkpoint_interval"] - 1) == 0 and epoch != 0:
+        saved_states_folder = os.path.join("datasets/saved_states/runid_{:03}/".format(config["runid"]))
+        if epoch % (config["checkpoint_interval"] - 1) == 0: # and epoch != 0:
             if not os.path.exists(saved_states_folder):
                 os.mkdir(saved_states_folder)
             state_name = "{}_runid_{:02}_epoch{:02}.pth".format(netname, config["runid"], epoch)
             state_dict_path = os.path.join(saved_states_folder, state_name)
-            torch.save(net.state_dict(), state_dict_path)
+            
+            torch.save({"model_state_dict": net.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "epoch": epoch,
+                        "loss": np.mean(train_info["loss"]),  ## mean loss of epoch
+                        "config": config,
+                        }, state_dict_path)
+
+            # torch.save(net.state_dict(), state_dict_path)
             ## Store example prediction
-            ex_loader = DataLoader(LiTSDataset2d(te_set, focus=focus, max_length=1), num_workers=workers, pin_memory=True)
+            imageidx = torch.randint(0, len(te_set), (1,))
+            ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
+                                   num_workers=workers, pin_memory=True)
             test_one_epoch(net, ex_loader, device, epoch, epochlength, 
                            wandblog=False, dst_format='png', dst_path=config["dst2d_fig_path"])
         print()
@@ -143,7 +159,12 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="Make code reproducible by setting a seed.", default=None)
     parser.add_argument("--runid", type=int, help="Id number for current run to distiguish saved states.")
     args = parser.parse_args()
-    config["runid"] = args.runid
     if args.seed is not None:
         utils.ensure_reproducibility(args.seed)
-    controller_2d(args.mode, args.focus)
+    
+    ## Override prespecified config if arguments are given from commandline.
+    config["runid"] = args.runid
+    config["focus"] = args.focus
+    config["mode"] = args.mode
+
+    controller_2d()

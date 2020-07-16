@@ -2,6 +2,7 @@ import utils
 from model import Metrics
 import wandb
 import torch
+import config
 
 
 def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None, dst_format=None): # , return_pred=False
@@ -74,7 +75,8 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
 
         ## Store predictions
         if dst_path is not None:
-            utils.store(pred, dst_path, sample['store_idx'], format=dst_format)
+            utils.store(pred, dst_path, sample['store_idx'],
+                        format=dst_format, epoch=epoch, focus=config["focus"])
 
     return cuminfodict
 

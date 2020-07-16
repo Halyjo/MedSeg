@@ -99,8 +99,30 @@ class Metrics():
         }
         return metric_dict
 
-    
+
+def test_Metrics():
+    lab = torch.zeros((4, 4))
+    pred = torch.zeros((4, 4))
+    lab[:, [0, 2]] = 0.9
+    pred[0:3, 0:3] = 0.9
+    lab = torch.round(lab)
+    pred = torch.round(pred)
+
+    intersection = 6
+    union = 11
+    sum_of_parts = 17
+
+    true_dice = 2*intersection/sum_of_parts
+    true_iou = intersection/union
+
+    M = Metrics(pred, lab)
+    assert np.isclose(true_dice, M.get_dice_coefficient()[0].item())
+    assert np.isclose(true_iou, M.get_jaccard_index().item())
+
+
 if __name__ == "__main__":
+    test_Metrics()
+    exit()
     pred = torch.randint(0, 2, (10, 10))
     lab = torch.randint(0, 2, (10, 10))
     metrics = Metrics(pred, lab)

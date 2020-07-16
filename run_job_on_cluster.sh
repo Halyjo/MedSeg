@@ -3,4 +3,3 @@ for i in $( cat MedSeg/stuff_to_copy.txt ); do
 done
 scp MedSeg.sh springfield:/root/experiments/
 kubectl job run MedSeg.yaml
-kubectl describe job medseg
