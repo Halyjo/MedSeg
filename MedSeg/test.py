@@ -82,7 +82,7 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
     for key in cuminfodict:
         cuminfodict[key] = np.mean(cuminfodict[key], axis=0)
     if wandblog:
-        wandb.log(infodict)
+        wandb.log(cuminfodict)
 
     return cuminfodict
 

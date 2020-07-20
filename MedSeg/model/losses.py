@@ -103,8 +103,10 @@ class DiceLoss(nn.Module):
 
     def forward(self, pred, target):
         pred = pred.squeeze(dim=1)
-        num = 2 * (pred * target).sum() + 1e-3
-        den = pred.sum() + target.sum() + 1e-3
+        smooth = 1
+        # dice系数的定义
+        num = 2 * (pred * target).sum()
+        den = pred.sum() + target.sum() + smooth
         dice = num/den
         return torch.clamp((1 - dice).mean(), 0, 1)
 

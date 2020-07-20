@@ -59,7 +59,7 @@ class ImageViewer():
 
     def view_img(self, idx=1, focus='liver', singleview=False):
         """
-        Function to view image with labeled segmentation map 
+        Function to view image with labeled segmentation map
         and prediction if available.
 
             Arguments
@@ -69,7 +69,7 @@ class ImageViewer():
                     Index of image to view.
                 [focus] : ['liver', 'lesion']
                     Default: 'liver'
-                    Which image segmentation map to get path of. 
+                    Which image segmentation map to get path of.
 
         """
         ## Get volumes list based on path and index.
@@ -90,7 +90,7 @@ class ImageViewer():
             fig = self._fill_one_index(fig, replace=False)
         else:
             fig = self._fill_canvas(fig, replace=False)
-            
+
         fig.canvas.mpl_connect('key_press_event', self._process_key)
         plt.subplots_adjust(top=0.9, bottom=0.1, left=0.05,
                             right=0.95, hspace=0.37, wspace=0.2)
@@ -107,7 +107,7 @@ class ImageViewer():
                     Index of image to view.
                 [focus] : ['liver', 'lesion']
                     Default: 'liver'
-                    Which image segmentation map to get path of. 
+                    Which image segmentation map to get path of.
 
             Returns
             -------
@@ -147,15 +147,18 @@ class ImageViewer():
             slice_list.extend(imgs_i)
             names.extend([self._available[i] for _ in range(len(imgs_i))])
         for i, img in enumerate(slice_list):
+            if i%3==0:
+                vmin = -200
+                vmax = 200
+            else:
+                vmin = 0
+                vmax = 1
             ax[i].set_title(names[i])
             if replace:
                 ax[i].images[0].set_array(img)
-                if i%3!=0:
-                    print(i, np.unique(ax[i].images[0].get_array(), return_counts=True)[1])
-                
             else:
-                # img = img/np.max(img)
-                ax[i].imshow(img, cmap='magma')
+                ax[i].imshow(img, cmap='magma', vmin=vmin, vmax=vmax)
+
             ax[i].axis('off')
         return fig
 
@@ -200,7 +203,7 @@ class ImageViewer():
         else:
             self.idx -= 10
             self._fill_canvas(fig)
-        
+
     def _next_bunsh(self, fig):
         if self.singleview:
             self.idx += 1
@@ -248,7 +251,7 @@ class VolumeViewer():
         names = list(paths.keys())
 
         self._remove_keymap_conflicts({'j', 'k', 's'})
-        
+
         fig, ax = plt.subplots(ncols=len(volslist))
         for i in range(len(volslist)):
             print(volslist[i].shape)
@@ -269,7 +272,7 @@ class VolumeViewer():
             -------
                 paths : dict
                     keys: ['vol', 'lab', 'pred']
-                    if the paths do not exist 
+                    if the paths do not exist
                 idx : int
                     Index of volume to view (with labels and predictions).
                 [focus] : str
