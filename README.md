@@ -1,6 +1,9 @@
 # MedSeg
 Image segmentation of CT images (LiTS dataset). In the future also weakly labeled deep learning image segmentation of CT Images. The model with losses and optimizers are stored in MedSeg/model. Training and testing is done with `train_one_epoch` and `test_one_epoch` stored in *train.py* and *test.py* respectively. *controller2d.py* is the main controller for analyzing the data as independent 2d image slices. *preprocessing.py* preforms the preprocessing given the original LiTS training set of 130 CT volumetric images.
 
+Segmentation of LiTS CT volumetric image dataset. The project was started on a template made by Branislav Hollander (https://github.com/branislav1991/PyTorchProjectFramework). The whole project is heavely influenced by https://github.com/assassint2017/MICCAI-LITS2017.
+
+
 ## How to run
 Run the following lines from terminal to train network with respect to lesion segmentations with a run id of 1. Note that focus, mode and runid are all specified in *MedSeg/config.py*, but will be overridden with the terminal arguments if provided.
 ```

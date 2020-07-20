@@ -1,5 +1,5 @@
 """
-Modified version of: 
+Built on code from source: 
 https://github.com/assassint2017/MICCAI-LITS2017/blob/master/data_prepare/get_training_set.py
 
 """
@@ -190,6 +190,7 @@ def preprocess3d(mode='train'):
 if __name__ == '__main__':
     # preprocess2d('train')
     # preprocess2d('test')    
-    preprocess3d('train')
-    preprocess3d('test')
+    # preprocess3d('train')
+    # preprocess3d('test')
+    pass
 

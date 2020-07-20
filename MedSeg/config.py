@@ -11,17 +11,22 @@ import os
 ################# RunID ###############
 #######################################
 config = dict(
+    ###################################
+    ############# Project #############
+    ###################################
     project="MedSeg",
     runid = 0,
     focus = 'liver',  ## Must be 'liver' or 'lesion'
-    mode = 'train',
-    ## path to raw LiTS data,
+    mode = 'train',  ## Must be 'train' or 'test'
+    ###################################
+    ########## Main datapaths #########
+    ###################################
+    ## path to raw LiTS unaltered data,
     srcpath = 'datasets/original/',
-    ## path to destination of preprocessing,
+    ## path to destination of 3d preprocessing,
     dstpath = 'datasets/preprocessed_quarter_size/',
-    ## Path to destination of preprocessing with 2d outputs.
+    ## Path to destination of 2d preprocessing.
     dst_2d_path = 'datasets/preprocessed_2d/',
-    train_proportion = 0.8,
     ##########################,
     ###### Preprocessing #####,
     ##########################,
@@ -41,29 +46,32 @@ config = dict(
     ##########################,
     ######### Model ##########,
     ##########################,
+    train_proportion = 0.8,
     drop_rate = 0.3,
-    ## Weight on losses 1, 2 and 3.
+    ## Weight on losses 1, 2 and 3. Weight on loss 4 is 1.
     alpha = 0.33,
-    ## cpu cores?,
-    num_workers = 4,
+    num_workers = 2,
+    ## Type of info to use from labels:
+    ## Options: ['segmentation', 'pixelcount', 'binary']
+    label_type = 'segmentation',
     ## DataLoader does not support any more yet,
     batch_size = 5,
-    max_epochs = 100,
+    max_epochs = 200,
     ## Optimizer and loss,
     optim_opts = {'lr': 0.01},
-    # lr_milestones = [10, 20],
-    # lr_milestone_scalar = 0.1,
     lr_decay_rate = 0.90,
-    loss_opts = {}, # Weights
-    ## Store model every n-th epoch
-    checkpoint_interval = 2,
-    init_2d_model_state = None, # "datasets/saved_states/VNet2d_runid_3000_epoch100.pth",
-    init_model_state = None, # "datasets/saved_states/ResUnet_runid_12_epoch30.pth",
+    loss_opts = {},
+    ## Store model with metadata at given intervals.
+    checkpoint_interval = 3,
+    init_2d_model_state = None,# "datasets/saved_states/runid_2009/VNet2d_runid_2009_epoch59.pth",
+    init_model_state = None, #"datasets/saved_states/ResUnet_runid_12_epoch30.pth",
 )
 
 config.update(
     dict(
-    ## Paths to data
+    ###########################################################
+    ########### Specific paths to parts of data ###############
+    ###########################################################
     train_volumes_path = os.path.join(config["srcpath"], 'train/ct/'),
     train_labels_path = os.path.join(config["srcpath"], 'train/seg/'),
     test_volumes_path = os.path.join(config["srcpath"], 'test/ct/'),

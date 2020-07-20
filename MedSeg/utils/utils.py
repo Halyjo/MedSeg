@@ -118,7 +118,7 @@ def store(img_batch, dst: str, idx: list, format=None, epoch:int=None, focus:str
             np.save(os.path.join(dst, name), pred_np)
         elif format == 'png':
             plt.imshow(pred_np, cmap='gray')
-            plt.savefig(os.path.join(dst, name), dpi=300, format='png')
+            plt.savefig(os.path.join(dst, name, f"_{i:02}"), dpi=300, format='png')
             plt.close()
 
         print("Stored {} in {}".format(name, dst))

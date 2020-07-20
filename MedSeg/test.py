@@ -2,7 +2,8 @@ import utils
 from model import Metrics
 import wandb
 import torch
-import config
+from config import config
+import numpy as np
 
 
 def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None, dst_format=None): # , return_pred=False
@@ -61,7 +62,7 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
         metrics = Metrics(pred, lab)
         
         diceparts = metrics.get_dice_coefficient()
-        infodict = {"epoch": epoch + i/epochlength,
+        infodict = {"epoch": epoch, # + i/epochlength,
                     "test_FNR": metrics.get_FNR().detach().cpu().numpy(),
                     "test_FPR": metrics.get_FPR().detach().cpu().numpy(),
                     "test_dice": diceparts[0].detach().cpu().numpy(),
@@ -70,13 +71,18 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
                     "test_iou": metrics.get_jaccard_index().detach().cpu().numpy(),
                     "test_conmat": metrics.get_conmat().detach().cpu().numpy()}
         utils.update_cumu_dict(cuminfodict, infodict)
-        if wandblog:
-            wandb.log(infodict)
+        
 
         ## Store predictions
         if dst_path is not None:
+            # to_store = torch.cat([vol, lab, pred])
             utils.store(pred, dst_path, sample['store_idx'],
                         format=dst_format, epoch=epoch, focus=config["focus"])
+    ## Infologging
+    for key in cuminfodict:
+        cuminfodict[key] = np.mean(cuminfodict[key], axis=0)
+    if wandblog:
+        wandb.log(infodict)
 
     return cuminfodict
 

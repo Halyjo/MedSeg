@@ -1,3 +1,8 @@
+"""
+Pytorch implementation of [UNet++: A Nested U-Net Architecture for Medical Image Segmentation](https://arxiv.org/abs/1807.10165)
+Source: https://github.com/4uiiurz1/pytorch-nested-unet
+"""
+
 import torch
 from torch import nn
 

@@ -22,6 +22,7 @@ class Metrics():
                             D: Depth
                             H: Height
                             W: Width
+
         """
         self.real_mask = real_mask.type(torch.bool)
         self.pred_mask = torch.round(pred_mask).type(torch.bool)
@@ -32,15 +33,21 @@ class Metrics():
         :return: dice系数 dice系数的分子 dice系数的分母(后两者用于计算dice_global)
         """
         intersection = (self.real_mask * self.pred_mask).sum().float()
-        union = self.real_mask.sum().float() + self.pred_mask.sum().float()        
-
-        return 2 * intersection / union, 2 * intersection, union
+        union = self.real_mask.sum().float() + self.pred_mask.sum().float()
+        # if union.sum() == 0:
+        #     dice = 1
+        # else:
+        dice = (2 * intersection + 1e-5) / (union + 1e-5)
+        return dice, 2 * intersection, union
 
     def get_jaccard_index(self, to_memory=False):
-        intersection = (self.real_mask * self.pred_mask).sum().float()
-        union = (self.real_mask | self.pred_mask).sum().float()
-
-        return intersection / union
+        intersection = (self.real_mask * self.pred_mask).sum().float() + 1e-5
+        union = (self.real_mask | self.pred_mask).sum().float() + 1e-5
+        # if (self.real_mask.sum().float() + self.real_mask.sum().float()) == 0:
+        #     result = 1
+        # else:
+        result = intersection / union
+        return result
 
     def get_VOE(self):
         """Volumetric Overlap Error
@@ -89,6 +96,10 @@ class Metrics():
         return mat
 
     def get_metric_dict(self):
+        """
+        Get dictionary with all metrics (except confusion matrix) in a
+        format that is easely converted to a pandas DataFrame.
+        """
         metric_dict = {
             'dice coefficient': [self.get_dice_coefficient()],
             'jaccard index': [self.get_jaccard_index()],
@@ -101,12 +112,29 @@ class Metrics():
 
 
 def test_Metrics():
-    lab = torch.zeros((4, 4))
-    pred = torch.zeros((4, 4))
-    lab[:, [0, 2]] = 0.9
-    pred[0:3, 0:3] = 0.9
-    lab = torch.round(lab)
-    pred = torch.round(pred)
+    n = 100
+    w = 50
+    iou = []
+    dice = []
+    lab = torch.zeros((n, n))
+    lab[:w, :w] = 1
+    for i in range(n):
+        pred = torch.zeros((n, n))
+        pred[i:i+w, :w] = 1
+        M = Metrics(pred, lab)
+        dice.append(M.get_dice_coefficient()[0])
+        iou.append(M.get_jaccard_index())
+
+    import matplotlib.pyplot as plt
+    plt.plot(np.arange(len(iou)), dice, label="dice")
+    plt.plot(np.arange(len(iou)), iou, label="iou")
+    plt.legend()
+    plt.show()
+    plt.plot(dice, iou)
+    plt.xlabel("dice")
+    plt.ylabel("iou")
+
+    plt.show()
 
     intersection = 6
     union = 11

@@ -4,10 +4,12 @@ import utils
 from config import config
 from model import Metrics
 import wandb
+import numpy as np
 
 
 def train_one_epoch(net, optimizer, critic, dataloader, 
                     device, epoch, epochlength, wandblog=True):
+
     """Go through training data once and adjust weighs of net.
 
         Arguments
@@ -68,7 +70,7 @@ def train_one_epoch(net, optimizer, critic, dataloader,
 
         metrics = Metrics(torch.round(pred), lab)
         diceparts = metrics.get_dice_coefficient()
-        infodict = {"epoch": epoch + i/epochlength,
+        infodict = {"epoch": epoch, # + i/epochlength,
                     "loss": loss.item(),
                     "train_FNR": metrics.get_FNR().detach().cpu().numpy(),
                     "train_FPR": metrics.get_FPR().detach().cpu().numpy(),
@@ -79,7 +81,12 @@ def train_one_epoch(net, optimizer, critic, dataloader,
                     "train_iou": metrics.get_jaccard_index().detach().cpu().numpy(),
                     "train_conmat": metrics.get_conmat().detach().cpu().numpy()}
         utils.update_cumu_dict(cuminfodict, infodict)
-        if wandblog:
-            wandb.log(infodict)
+
+    ## Infologging
+    for key in cuminfodict:
+        cuminfodict[key] = np.mean(cuminfodict[key], axis=0)
+    if wandblog:
+        wandb.log(cuminfodict)
+
     return cuminfodict
 

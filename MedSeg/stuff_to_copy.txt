@@ -3,7 +3,6 @@ controller3d.py
 controller2d.py
 config.py
 dataloaders.py
-main.py
 metrics.py
 model
 monitor

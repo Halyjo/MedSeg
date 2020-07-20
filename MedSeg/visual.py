@@ -17,16 +17,22 @@ import torchvision.models as models
 
 class ImageViewer():
     _focus_options = ['liver', 'lesion']
-
-    def __init__(self, src_path, dst_path=None):
+    _available = None
+    def __init__(self, src_path, dst_path=None, only_available=True):
         """
             Arguments
             ---------
                 src_path : str
-                    Path to directory containing two folders.
+                    Path to directory containing folders:
                     - slices/
                         Containing slice_XXXXX.npy files (XXXXX is a number)
-                    - labels/
+                    - labels_lesion/
+                        Containing segmentation_XXXXX.npy files (XXXXX is a number)
+                    - labels_liver/
+                        Containing segmentation_XXXXX.npy files (XXXXX is a number)
+                    - pred_lesion/
+                        Containing segmentation_XXXXX.npy files (XXXXX is a number)
+                    - pred_liver/
                         Containing segmentation_XXXXX.npy files (XXXXX is a number)
                 [dst_path] : str
                     Default: "./"
@@ -34,6 +40,22 @@ class ImageViewer():
         """
         self.src_path = src_path
         self.dst_path = dst_path if dst_path is not None else "./"
+        self.only_available = only_available
+
+    def get_available(self, focus):
+        """Indices of all images for which a prediction has been stored."""
+        if self._available is None:
+            pred_slices = os.listdir(os.path.join(self.src_path, f"pred_{focus}/"))
+            pred_slices = [s for s in pred_slices if len(s)>21]
+            labs = os.listdir(os.path.join(self.src_path, f"labels_{focus}/"))
+            labs = [s for s in labs if len(s)>21]
+            if self.only_available:
+                pred_indices = set([int(name.strip(".npy").split("_")[1]) for name in pred_slices])
+                lab_indices = set([int(name.strip(".npy").split("_")[1]) for name in labs])
+                self._available = sorted(list(pred_indices & lab_indices))
+            else:
+                self._available = np.arange(len(pred_slices))
+        return self._available
 
     def view_img(self, idx=1, focus='liver', singleview=False):
         """
@@ -53,8 +75,8 @@ class ImageViewer():
         ## Get volumes list based on path and index.
         assert isinstance(idx, int), "idx must be an integer."
         assert focus in self._focus_options, f"focus must be among: {self._focus_options}."
-        assert singleview in [True, False], "singleview must be boolean value."
-
+        assert isinstance(singleview, bool), "singleview must be boolean value."
+        self.get_available(focus)
         self.idx = idx
         self.focus = focus
         self.singleview = singleview
@@ -70,6 +92,8 @@ class ImageViewer():
             fig = self._fill_canvas(fig, replace=False)
             
         fig.canvas.mpl_connect('key_press_event', self._process_key)
+        plt.subplots_adjust(top=0.9, bottom=0.1, left=0.05,
+                            right=0.95, hspace=0.37, wspace=0.2)
         plt.show()
 
     def get_paths(self, idx=1, focus='liver'):
@@ -89,22 +113,18 @@ class ImageViewer():
             -------
                 paths : dict
                     keys: ['slice', 'lab', 'pred']
-                    if the paths do not exist 
-                [focus] : str
-                    Default: "liver"
-                    options: ['liver', 'lesion']
-                    Which labels and prediction to view. Segmented livers or segmented lesions.
+                    if the paths do not exist
         """
         keys = ['slice', 'lab', 'pred']
         paths = [
-            os.path.join(self.src_path, "slices/slice_{:05}.npy".format(idx)),
-            os.path.join(self.src_path, "labels_{}/segmentation_{:05}.npy".format(focus, idx)),
-            os.path.join(self.src_path, "pred_{}/prediction_{:05}.npy".format(focus, idx)),
+            os.path.join(self.src_path, "slices/slice_{:05}.npy".format(self._available[idx])),
+            os.path.join(self.src_path, "labels_{}/segmentation_{:05}.npy".format(focus, self._available[idx])),
+            os.path.join(self.src_path, "pred_{}/prediction_{:05}_epoch001_focus{}.npy".format(focus, self._available[idx], focus)),
         ]
         path_dict = {}
         for k, p in zip(keys, paths):
             if os.path.exists(p):
-                print(f"{k}: {p}", "added.")
+                # print(f"{k}: {p}", "added.")
                 path_dict.update({k: p})
             else:
                 print(p, "does not exist.")
@@ -123,14 +143,16 @@ class ImageViewer():
         names = []
         for i in range(start, end):
             paths = self.get_paths(i, self.focus)
-            slice_list.extend([np.load(p) for p in paths.values()])
-            names.extend(list(paths.keys()))
+            imgs_i = [np.load(p) for p in paths.values()]
+            slice_list.extend(imgs_i)
+            names.extend([self._available[i] for _ in range(len(imgs_i))])
         for i, img in enumerate(slice_list):
-            if i<6:
-                ax[i].set_title(names[i])
+            ax[i].set_title(names[i])
             if replace:
                 ax[i].images[0].set_array(img)
-                # print(np.unique(img, return_counts=True)[1])
+                if i%3!=0:
+                    print(i, np.unique(ax[i].images[0].get_array(), return_counts=True)[1])
+                
             else:
                 # img = img/np.max(img)
                 ax[i].imshow(img, cmap='magma')
@@ -236,6 +258,7 @@ class VolumeViewer():
                          cmap='magma')
             ax[i].set_title(names[i])
         fig.canvas.mpl_connect('key_press_event', self._process_key)
+        plt.subplots_adjust(hspace=0.1, wspace=0.1)
         plt.show()
 
     def get_paths(self, idx=0, focus='liver'):
@@ -263,7 +286,7 @@ class VolumeViewer():
         path_dict = {}
         for k, p in zip(keys, paths):
             if os.path.exists(p):
-                print(f"{k}: {p}", "added.")
+                # print(f"{k}: {p}", "added.")
                 path_dict.update({k: p})
             else:
                 print(p, "does not exist.")
@@ -308,20 +331,18 @@ class VolumeViewer():
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser("View LiTS training data.")
-    parser.add_argument("--idx", type=int, default=0,
+    parser.add_argument("--idx", type=int, default=1,
                         help="Index of training image to view.")
     parser.add_argument("--focus", type=str, default="liver",
                         help="'liver' or 'lesion'.")
-    parser.add_argument("--mode", type=str, default='train',
-                        choices=('train', 'test'),
-                        help="Choose what data to display from. training or testing data. ")
     parser.add_argument("--dims", type=int, default=2, choices=[2, 3],
                         help="View images analyzed as 2d independent slices or 3d volumetric images.")
     parser.add_argument("--single", type=bool, default=False, help="View one or 10 images at a time.")
+    parser.add_argument("--available", type=bool, default=True, help="Only view images where the there are both predictions and labels.")
     args = parser.parse_args()
     if args.dims == 3:
         V = VolumeViewer(f"datasets/preprocessed_quarter_size/{args.mode}/")
         V.view_volume(args.idx, args.focus)
     else:
-        I = ImageViewer(f"datasets/preprocessed_2d/{args.mode}/")
+        I = ImageViewer(f"datasets/preprocessed_2d/", only_available=args.available)
         I.view_img(args.idx, focus=args.focus, singleview=args.single)

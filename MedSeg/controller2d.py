@@ -23,7 +23,6 @@ import pandas as pd
 
 ## Use GPU if available
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
 
 
 def controller_2d():
@@ -35,7 +34,7 @@ def controller_2d():
     
     ## Load data
     full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"])
-    workers = 2
+    workers = config["num_workers"]
     
     ## Split data into train and test
     train_proportion = config["train_proportion"]
@@ -45,7 +44,6 @@ def controller_2d():
     ## Init and load model if specified in config
     net = VNet2d(drop_rate=config["drop_rate"])
     # net = DeepVNet2d(drop_rate=config["drop_rate"])
-    # net = NestedUNet(2, 1)
 
     ## Load model if specified in config
     print(config["init_2d_model_state"])
@@ -56,17 +54,17 @@ def controller_2d():
         print("Successfully loaded net")
     net.to(device)
     
-    ## Get resulting metrics and store predictions
+    ## If only testing, run through net, get resulting metrics and store predictions.
     if config["mode"] == 'test':
         net.eval()
 
         tr_dataloader = DataLoader(tr_set, num_workers=workers, pin_memory=True)
-        if not os.path.exists(config[f"dst2d_pred_{config["focus"]}_path"]):
-            os.mkdir(config[f"dst2d_pred_{config["focus"]}_path"])
-        train_info = test_one_epoch(net, tr_dataloader, device, 
-                                    1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config["focus"]}_path"])
+        if not os.path.exists(config[f"dst2d_pred_{config['focus']}_path"]):
+            os.mkdir(config[f"dst2d_pred_{config['focus']}_path"])
+        train_info = test_one_epoch(net, tr_dataloader, device,
+                                    1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config['focus']}_path"])
         tr_df = pd.DataFrame(train_info)
-        tr_df.to_csv(os.path.join(config["dstpath"], 
+        tr_df.to_csv(os.path.join(config["dstpath"],
                                   "tr_metrics_{}_{}_run{:02}.csv".format(config["mode"], config["focus"], config["runid"])))
 
         te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
@@ -80,11 +78,9 @@ def controller_2d():
     ## Monitor process with weights and biases
     wandb.init(config=config)
 
+    ## Optimizer
     optimizer = torch.optim.Adam(params=net.parameters(), 
                                  **config["optim_opts"])
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, 
-    #                                                  config["lr_milestones"], 
-    #                                                  config["lr_milestone_scalar"])
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, config["lr_decay_rate"], last_epoch=-1)
     
     ## Loss
@@ -99,32 +95,20 @@ def controller_2d():
 
         ## Make dataloaders
         print("Loading data ...")
-        tr_dataloader = DataLoader(tr_set, batch_size=config["batch_size"], shuffle=True, num_workers=workers, pin_memory=True)
-        te_dataloader = DataLoader(te_set, batch_size=config["batch_size"], shuffle=True, num_workers=workers, pin_memory=True)
+        tr_dataloader = DataLoader(tr_set, batch_size=config["batch_size"], 
+                                   shuffle=True, num_workers=workers, pin_memory=True)
+        te_dataloader = DataLoader(te_set, batch_size=config["batch_size"], 
+                                   shuffle=True, num_workers=workers, pin_memory=True)
 
         epochlength = len(tr_dataloader) + len(te_dataloader)
 
         print("Training ...")
-        train_info = train_one_epoch(net, optimizer, critic, tr_dataloader, device, epoch, epochlength)
-
-        ## Get dice global and mean iou for training
-        train_mean_iou = np.mean(train_info['train_iou'])
-        print("train mean iou: {}".format(train_mean_iou))
-        train_dice_global = np.sum(train_info['train_dice_numerator']) / np.sum(train_info['train_dice_denominator'])
-        print("Global train dice at epoch {}: {}".format(epoch, train_dice_global))
-
-        wandb.log({"train_dice_global": train_dice_global, "train_mean_iou": train_mean_iou})
+        train_info = train_one_epoch(net, optimizer, critic, 
+                                     tr_dataloader, device, epoch, epochlength)
 
         print("Testing ...")
-        test_info = test_one_epoch(net, te_dataloader, device, epoch + len(tr_dataloader)/epochlength, epochlength)
-
-        ## Get dice global and mean iou for testing
-        test_mean_iou = np.mean(test_info['test_iou'])
-        print("test mean iou: {}".format(test_mean_iou))
-        test_dice_global = np.sum(test_info['test_dice_numerator']) / np.sum(test_info['test_dice_denominator'])
-        print("Global test dice at epoch {}: {}".format(epoch, test_dice_global))
-
-        wandb.log({"test_dice_global": test_dice_global, "test_mean_iou": test_mean_iou})
+        test_info = test_one_epoch(net, te_dataloader, device, 
+                                     epoch, epochlength)
 
         scheduler.step()
         
@@ -149,8 +133,8 @@ def controller_2d():
             imageidx = torch.randint(0, len(te_set), (1,))
             ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
                                    num_workers=workers, pin_memory=True)
-            test_one_epoch(net, ex_loader, device, epoch, epochlength, 
-                           wandblog=False, dst_format='png', dst_path=config["dst2d_fig_path"])
+            test_one_epoch(net, ex_loader, device, epoch, epochlength,
+                           wandblog=False, dst_format='npy', dst_path=config["dst2d_fig_path"])
         print()
 
 
@@ -164,6 +148,11 @@ if __name__ == "__main__":
         default='train', choices=('liver', 'lesion'))
     parser.add_argument("--seed", type=int, help="Make code reproducible by setting a seed.", default=None)
     parser.add_argument("--runid", type=int, help="Id number for current run to distiguish saved states.")
+    parser.add_argument("--label_type", choices=['segmentation', 'pixelcount', 'binary'], 
+                        help="What information to apply from the labels. \
+                            Eg. if binary, only image level information is \
+                            provided to the network during training.",
+                        default='segmentation')
     args = parser.parse_args()
     if args.seed is not None:
         utils.ensure_reproducibility(args.seed)
@@ -172,5 +161,6 @@ if __name__ == "__main__":
     config["runid"] = args.runid
     config["focus"] = args.focus
     config["mode"] = args.mode
+    config["label_type"] = args.label_type
 
     controller_2d()

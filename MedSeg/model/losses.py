@@ -41,8 +41,8 @@ class MSEPixelCountLoss(nn.Module):
 
     def forward(self, pred, target):
         pred = torch.round(pred)
-        pred = pred.type(torch.bool).sum()
-        target = target.type(torch.bool).sum()
+        pred = pred.sum().float()
+        target = target.sum().float()
         return self.mse(pred, target)
 
 
@@ -97,21 +97,17 @@ class WeightedCrossEntropyLoss(nn.Module):
 
 
 class DiceLoss(nn.Module):
-
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
+        self.kwargs = kwargs
 
     def forward(self, pred, target):
         pred = pred.squeeze(dim=1)
-        smooth = 1
-        # dice系数的定义
-        num = 2 * (pred * target).sum()
-        den = pred.sum() + target.sum() + smooth
+        num = 2 * (pred * target).sum() + 1e-3
+        den = pred.sum() + target.sum() + 1e-3
         dice = num/den
         return torch.clamp((1 - dice).mean(), 0, 1)
 
-        # 返回的是dice距离
-        return torch.clamp((1 - dice).mean(), 0, 1)
 
 if __name__ == "__main__":
     pass
