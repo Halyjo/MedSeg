@@ -30,13 +30,14 @@ class TverskyLoss(nn.Module):
         return torch.clamp((1 - dice).mean(), 0, 2)
 
 
-class MSELossPixelCount(nn.Module):
+class MSEPixelCountLoss(nn.Module):
     """
-    Mean Squared Error Loss of pixelcound given predictions and labels as images with binary values.
+    Mean Squared Error Loss of pixel cound given predictions 
+    and labels as images with values (0 and 1).
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
-        self.mse = torch.nn.MSELoss()
+        self.mse = torch.nn.MSELoss(**kwargs)
 
     def forward(self, pred, target):
         pred = torch.round(pred)
@@ -107,6 +108,7 @@ class DiceLoss(nn.Module):
         num = 2 * (pred * target).sum()
         den = pred.sum() + target.sum() + smooth
         dice = num/den
+        return torch.clamp((1 - dice).mean(), 0, 1)
 
         # 返回的是dice距离
         return torch.clamp((1 - dice).mean(), 0, 1)

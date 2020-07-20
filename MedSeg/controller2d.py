@@ -12,7 +12,7 @@ from dataloaders import LiTSDataset, LiTSDataset2d, Testset
 from preprocessing import preprocess3d
 from torch.utils.data import DataLoader
 import torch
-from model import VNet2d, TverskyLoss, DiceLoss, MSELossPixelCount, DeepVNet2d
+from model import VNet2d, TverskyLoss, DiceLoss, MSEPixelCountLoss, DeepVNet2d
 from train import train_one_epoch
 from test import test_one_epoch
 import wandb
@@ -86,8 +86,14 @@ def controller_2d():
     #                                                  config["lr_milestones"], 
     #                                                  config["lr_milestone_scalar"])
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, config["lr_decay_rate"], last_epoch=-1)
-    # critic = TverskyLoss()
-    critic = DiceLoss()
+    
+    ## Loss
+    if config["label_type"] == 'segmentation':
+        # critic = DiceLoss(**config["loss_opts"])
+        critic = TverskyLoss(**config["loss_opts"])
+    elif config["label_type"] == 'pixelcount':
+        critic = MSEPixelCountLoss(**config["loss_opts"])
+    
     for epoch in range(config["max_epochs"]):
         print(f"Epoch: {epoch}.")
 
