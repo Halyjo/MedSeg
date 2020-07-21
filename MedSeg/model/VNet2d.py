@@ -194,10 +194,11 @@ class VNet2d(nn.Module):
             nn.PReLU(64)
         )
 
-        self.up_conv4 = nn.Sequential(
-            nn.ConvTranspose2d(64, 1, 2, 2),
-            nn.Sigmoid()
-        )
+        # self.up_conv4 = nn.Sequential(
+        #     nn.ConvTranspose2d(64, 32, 2, 2),
+        #     nn.BatchNorm2d(32),
+        #     nn.PReLU(32)
+        # )
 
         self.dp1 = nn.Dropout2d(self.drop_rate)
         self.dp2 = nn.Dropout2d(self.drop_rate)
@@ -206,23 +207,23 @@ class VNet2d(nn.Module):
         self.dp5 = nn.Dropout2d(self.drop_rate)
         self.dp6 = nn.Dropout2d(self.drop_rate)
 
-        # self.map3 = nn.Sequential(
-        #     nn.Conv2d(64, 1, 1, 1),
-        #     nn.Upsample(scale_factor=(2, 2), mode='bilinear'),
-        #     nn.Sigmoid()
-        # )
+        self.map3 = nn.Sequential(
+            nn.Conv2d(64, 1, 1, 1),
+            nn.Upsample(scale_factor=(2, 2), mode='bilinear'),
+            nn.Sigmoid()
+        )
 
-        # self.map2 = nn.Sequential(
-        #     nn.Conv2d(128, 1, 1, 1),
-        #     nn.Upsample(scale_factor=(4, 4), mode='bilinear'),
-        #     nn.Sigmoid()
-        # )
+        self.map2 = nn.Sequential(
+            nn.Conv2d(128, 1, 1, 1),
+            nn.Upsample(scale_factor=(4, 4), mode='bilinear'),
+            nn.Sigmoid()
+        )
 
-        # self.map1 = nn.Sequential(
-        #     nn.Conv2d(256, 1, 1, 1),
-        #     nn.Upsample(scale_factor=(8, 8), mode='bilinear'),
-        #     nn.Sigmoid()
-        # )
+        self.map1 = nn.Sequential(
+            nn.Conv2d(256, 1, 1, 1),
+            nn.Upsample(scale_factor=(8, 8), mode='bilinear'),
+            nn.Sigmoid()
+        )
 
 
     def forward(self, inputs):
@@ -245,20 +246,20 @@ class VNet2d(nn.Module):
         ## Decoding
         outputs = self.decoder_stage1(long_range4) + short_range4
         outputs = self.dp4(outputs)
-        # output1 = self.map1(outputs)
+        output1 = self.map1(outputs)
         short_range7 = self.up_conv2(outputs)
 
         outputs = self.decoder_stage2(torch.cat([short_range7, long_range3], dim=1)) + short_range7
         outputs = self.dp5(outputs)
-        # output2 = self.map2(outputs)
+        output2 = self.map2(outputs)
         short_range8 = self.up_conv3(outputs)
 
         outputs = self.decoder_stage3(torch.cat([short_range8, long_range2], dim=1)) + short_range8
         outputs = self.dp6(outputs)
-        output3 = self.up_conv4(outputs)
+        output3 = self.map3(outputs)
 
         if self.training is True:
-            return [output3, output3]
+            return output1, output2, output3
         else:
             return output3
 

@@ -81,8 +81,7 @@ def train_one_epoch(net, optimizer, critic, dataloader,
                     "train_iou": metrics.get_jaccard_index().detach().cpu().numpy(),
                     "train_conmat": metrics.get_conmat().detach().cpu().numpy()}
         utils.update_cumu_dict(cuminfodict, infodict)
-        if wandblog:
-            wandb.log({"detailed_loss": loss.item()})
+
     ## Infologging
     for key in cuminfodict:
         cuminfodict[key] = np.mean(cuminfodict[key], axis=0)

@@ -49,7 +49,7 @@ config = dict(
     train_proportion = 0.8,
     drop_rate = 0.3,
     ## Weight on losses 1, 2 and 3. Weight on loss 4 is 1.
-    alpha = 0, # 0.33,
+    alpha = 0.33,
     num_workers = 2,
     ## Type of info to use from labels:
     ## Options: ['segmentation', 'pixelcount', 'binary']
