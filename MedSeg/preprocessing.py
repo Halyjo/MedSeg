@@ -37,12 +37,12 @@ def preprocess2d(mode='train'):
 
     ## Processing
     start = time()
-    for f in tqdm(os.listdir(config[f"{config["mode"]}_volumes_path"]), desc=f"{config["mode"]} 2d processing"):
+    for f in tqdm(os.listdir(config[f"{config['mode']}_volumes_path"]), desc=f"{config['mode']} 2d processing"):
         ## Get Volume matrices
-        ct = sitk.ReadImage(os.path.join(config[f"{config["mode"]}_volumes_path"], f), sitk.sitkInt16)
+        ct = sitk.ReadImage(os.path.join(config[f"{config['mode']}_volumes_path"], f), sitk.sitkInt16)
         ct_array = sitk.GetArrayFromImage(ct)
 
-        seg = sitk.ReadImage(os.path.join(config[f"{config["mode"]}_labels_path"], f.replace('volume', 'segmentation')), sitk.sitkUInt8)
+        seg = sitk.ReadImage(os.path.join(config[f"{config['mode']}_labels_path"], f.replace('volume', 'segmentation')), sitk.sitkUInt8)
         seg_array = sitk.GetArrayFromImage(seg)
         ## TODO: Change if looking for tumors
         ## Make all cancer labels to liverlabels (for liver segmentation, not tumor segmentation)
@@ -80,7 +80,7 @@ def preprocess2d(mode='train'):
             np.save(os.path.join(config[f"dst2d_labels_lesion_path"], segmentation_filename),
                     lesion_array[i, ...])
 
-    print("Finished {} preprocessing in: {:02}s".format(config["mode"], time() - start))
+    print("Finished {} preprocessing in: {:02}s".format(config['mode'], time() - start))
 
 
 def preprocess3d(mode='train'):
@@ -89,9 +89,9 @@ def preprocess3d(mode='train'):
     """
     ## Create dst folders if missing
     dirpaths = [
-        config[f"dst_{config["mode"]}_labels_liver_path"],
-        config[f"dst_{config["mode"]}_labels_lesion_path"],
-        config[f"dst_{config["mode"]}_volumes_path"],
+        config[f"dst_{config['mode']}_labels_liver_path"],
+        config[f"dst_{config['mode']}_labels_lesion_path"],
+        config[f"dst_{config['mode']}_volumes_path"],
     ]
     for p in dirpaths:
         if not os.path.exists(p):
@@ -99,13 +99,13 @@ def preprocess3d(mode='train'):
 
     ## Processing
     start = time()
-    for f in tqdm(os.listdir(config[f"{config["mode"]}_volumes_path"]), desc=f"{config["mode"]} processing"):
+    for f in tqdm(os.listdir(config[f"{config['mode']}_volumes_path"]), desc=f"{config['mode']} processing"):
         ## Get Volume matrices
         
-        ct = sitk.ReadImage(os.path.join(config[f"{config["mode"]}_volumes_path"], f), sitk.sitkInt16)
+        ct = sitk.ReadImage(os.path.join(config[f"{config['mode']}_volumes_path"], f), sitk.sitkInt16)
         ct_array = sitk.GetArrayFromImage(ct)
 
-        seg = sitk.ReadImage(os.path.join(config[f"{config["mode"]}_labels_path"], f.replace('volume', 'segmentation')), sitk.sitkUInt8)
+        seg = sitk.ReadImage(os.path.join(config[f"{config['mode']}_labels_path"], f.replace('volume', 'segmentation')), sitk.sitkUInt8)
         seg_array = sitk.GetArrayFromImage(seg)
         ## TODO: Change if looking for tumors
         ## Make all cancer labels to liverlabels (for liver segmentation, not tumor segmentation)
@@ -181,10 +181,10 @@ def preprocess3d(mode='train'):
         lesion_sitk_lab.SetSpacing((ct.GetSpacing()[0], ct.GetSpacing()[1], config["slice_thickness"]))
 
         ## Store image in config["new_ct_path"]
-        sitk.WriteImage(new_ct, os.path.join(config[f"dst_{config["mode"]}_volumes_path"], f))
-        sitk.WriteImage(liver_sitk_lab, os.path.join(config[f"dst_{config["mode"]}_labels_liver_path"], f.replace('volume', 'segmentation').replace('.nii', '.nii.gz')))
-        sitk.WriteImage(lesion_sitk_lab, os.path.join(config[f"dst_{config["mode"]}_labels_lesion_path"], f.replace('volume', 'segmentation').replace('.nii', '.nii.gz')))
-    print("Finished {} preprocessing in: {:02}s".format(config["mode"], time() - start))
+        sitk.WriteImage(new_ct, os.path.join(config[f"dst_{config['mode']}_volumes_path"], f))
+        sitk.WriteImage(liver_sitk_lab, os.path.join(config[f"dst_{config['mode']}_labels_liver_path"], f.replace('volume', 'segmentation').replace('.nii', '.nii.gz')))
+        sitk.WriteImage(lesion_sitk_lab, os.path.join(config[f"dst_{config['mode']}_labels_lesion_path"], f.replace('volume', 'segmentation').replace('.nii', '.nii.gz')))
+    print("Finished {} preprocessing in: {:02}s".format(config['mode'], time() - start))
 
 
 if __name__ == '__main__':
