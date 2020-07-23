@@ -193,12 +193,11 @@ class VNet2d(nn.Module):
             nn.BatchNorm2d(64),
             nn.PReLU(64)
         )
-
-        # self.up_conv4 = nn.Sequential(
-        #     nn.ConvTranspose2d(64, 32, 2, 2),
-        #     nn.BatchNorm2d(32),
-        #     nn.PReLU(32)
-        # )
+        
+        self.up_conv4 = nn.Sequential(
+            nn.ConvTranspose2d(64, 1, 2, 2),
+            nn.Sigmoid()
+        )
 
         self.dp1 = nn.Dropout2d(self.drop_rate)
         self.dp2 = nn.Dropout2d(self.drop_rate)
@@ -206,12 +205,6 @@ class VNet2d(nn.Module):
         self.dp4 = nn.Dropout2d(self.drop_rate)
         self.dp5 = nn.Dropout2d(self.drop_rate)
         self.dp6 = nn.Dropout2d(self.drop_rate)
-
-        self.map3 = nn.Sequential(
-            nn.Conv2d(64, 1, 1, 1),
-            nn.Upsample(scale_factor=(2, 2), mode='bilinear'),
-            nn.Sigmoid()
-        )
 
         self.map2 = nn.Sequential(
             nn.Conv2d(128, 1, 1, 1),
@@ -256,7 +249,7 @@ class VNet2d(nn.Module):
 
         outputs = self.decoder_stage3(torch.cat([short_range8, long_range2], dim=1)) + short_range8
         outputs = self.dp6(outputs)
-        output3 = self.map3(outputs)
+        output3 = self.up_conv4(outputs)
 
         if self.training is True:
             return output1, output2, output3

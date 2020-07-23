@@ -6,7 +6,7 @@ from config import config
 import numpy as np
 
 
-def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None, dst_format=None): # , return_pred=False
+def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, dst_path=None, dst_format=None):
     """Go through testing data once, measure performance
     and send result to weights and biases
 
@@ -44,13 +44,15 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
     net.eval()
     cuminfodict = {
         "epoch": [],
-        "test_FNR": [],
-        "test_FPR": [],
+        "test_fnr": [],
+        "test_fpr": [],
+        "test_voe": [],
+        "test_rvd": [],
         "test_dice": [],
         "test_iou": [],
         "test_dice_numerator": [],
         "test_dice_denominator": [],
-        "test_conmat": [],
+        # "test_conmat": [],
     }
 
     for i, sample in enumerate(dataloader):
@@ -59,17 +61,13 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
         pred = torch.round(net(vol))
         # onehot_lab = utils.one_hot(lab, nclasses=3)
 
-        metrics = Metrics(pred, lab)
-        
-        diceparts = metrics.get_dice_coefficient()
-        infodict = {"epoch": epoch, # + i/epochlength,
-                    "test_FNR": metrics.get_FNR().detach().cpu().numpy(),
-                    "test_FPR": metrics.get_FPR().detach().cpu().numpy(),
-                    "test_dice": diceparts[0].detach().cpu().numpy(),
-                    "test_dice_numerator": diceparts[1].detach().cpu().numpy(),
-                    "test_dice_denominator": diceparts[2].detach().cpu().numpy(),
-                    "test_iou": metrics.get_jaccard_index().detach().cpu().numpy(),
-                    "test_conmat": metrics.get_conmat().detach().cpu().numpy()}
+        ## Log metrics
+        metrics = Metrics(pred, lab, mode='test')
+        infodict = metrics.get_metric_dict()
+        for key in infodict:
+            infodict[key] = infodict[key].detach().cpu().numpy()
+        infodict.update({"epoch": epoch})
+
         utils.update_cumu_dict(cuminfodict, infodict)
         
 

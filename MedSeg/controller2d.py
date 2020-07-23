@@ -53,7 +53,6 @@ def controller_2d():
         net.load_state_dict(state_dict)
         print("Successfully loaded net")
     net.to(device)
-    
     ## If only testing, run through net, get resulting metrics and store predictions.
     if config["mode"] == 'test':
         net.eval()
@@ -63,16 +62,16 @@ def controller_2d():
             os.mkdir(config[f"dst2d_pred_{config['focus']}_path"])
         train_info = test_one_epoch(net, tr_dataloader, device,
                                     1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config['focus']}_path"])
-        tr_df = pd.DataFrame(train_info)
-        tr_df.to_csv(os.path.join(config["dstpath"],
-                                  "tr_metrics_{}_{}_run{:02}.csv".format(config["mode"], config["focus"], config["runid"])))
+        tr_df = pd.DataFrame(train_info, index=[0])
+        tr_df.to_csv(os.path.join(config["dst_2d_path"],
+                                  "tr_metrics_{}_{}_run{:02}.csv".format(config["label_type"], config["focus"], config["runid"])))
 
         te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
         test_info = test_one_epoch(net, te_dataloader, device, 
-                                   1, 1, wandblog=False, dst_path=None)
-        te_df = pd.DataFrame(test_info)
-        te_df.to_csv(os.path.join(config["dstpath"], 
-                                  "te_metrics_{}_{}_run{:02}.csv".format(config["mode"], config["focus"], config["runid"])))
+                                   1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config['focus']}_path"])
+        te_df = pd.DataFrame(test_info, index=[0])
+        te_df.to_csv(os.path.join(config["dst_2d_path"], 
+                                  "te_metrics_{}_{}_run{:02}.csv".format(config["label_type"], config["focus"], config["runid"])))
         exit()
 
     ## Monitor process with weights and biases
@@ -85,8 +84,8 @@ def controller_2d():
     
     ## Loss
     if config["label_type"] == 'segmentation':
-        # critic = DiceLoss(**config["loss_opts"])
-        critic = TverskyLoss(**config["loss_opts"])
+        critic = DiceLoss(**config["loss_opts"])
+        # critic = TverskyLoss(**config["loss_opts"])
     elif config["label_type"] == 'pixelcount':
         critic = MSEPixelCountLoss(**config["loss_opts"])
     

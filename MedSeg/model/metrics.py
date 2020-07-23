@@ -9,7 +9,7 @@ import torch
 
 
 class Metrics():
-    def __init__(self, pred_mask, real_mask):
+    def __init__(self, pred_mask, real_mask, mode=None):
         """Class to calculate metrics given prediction mask and segmented mask.
 
             Arguments
@@ -26,6 +26,7 @@ class Metrics():
         """
         self.real_mask = real_mask.type(torch.bool)
         self.pred_mask = torch.round(pred_mask).type(torch.bool)
+        self.mode = "" if mode is None else mode + "_"
 
     def get_dice_coefficient(self):
         """
@@ -100,13 +101,17 @@ class Metrics():
         Get dictionary with all metrics (except confusion matrix) in a
         format that is easely converted to a pandas DataFrame.
         """
+        diceparts = self.get_dice_coefficient()
         metric_dict = {
-            'dice coefficient': [self.get_dice_coefficient()],
-            'jaccard index': [self.get_jaccard_index()],
-            'voe': [self.get_VOE()],
-            'rvd': [self.get_RVD()],
-            'fnr': [self.get_FNR()],
-            'fpr': [self.get_FPR()],
+            f'{self.mode}dice': diceparts[0],
+            f'{self.mode}dice_numerator': diceparts[1],
+            f'{self.mode}dice_denominator': diceparts[2],
+            f'{self.mode}iou': self.get_jaccard_index(),
+            f'{self.mode}voe': self.get_VOE(),
+            f'{self.mode}rvd': self.get_RVD(),
+            f'{self.mode}fnr': self.get_FNR(),
+            f'{self.mode}fpr': self.get_FPR(),
+            # f'{self.mode}conmat': self.get_conmat(),
         }
         return metric_dict
 

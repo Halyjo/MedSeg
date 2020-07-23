@@ -52,7 +52,7 @@ def train_one_epoch(net, optimizer, critic, dataloader,
         "train_iou": [],
         "train_conmat": []
     }
-
+    alpha = config["alpha"]
     for i, sample in enumerate(dataloader):
         optimizer.zero_grad()
         vol = sample['vol'].to(device, non_blocking=True)
@@ -63,7 +63,8 @@ def train_one_epoch(net, optimizer, critic, dataloader,
         for output_part in outputs:
             losses.append(critic(output_part, lab))
 
-        loss = sum(losses[:-1])*config["alpha"] + losses[-1]
+        loss = sum(losses[:-1])*alpha + losses[-1]
+        alpha *= config["alpha_decay_rate"]
         loss.backward()
         optimizer.step()
         # onehot_lab = utils.one_hot(lab, nclasses=3)
@@ -81,6 +82,9 @@ def train_one_epoch(net, optimizer, critic, dataloader,
                     "train_iou": metrics.get_jaccard_index().detach().cpu().numpy(),
                     "train_conmat": metrics.get_conmat().detach().cpu().numpy()}
         utils.update_cumu_dict(cuminfodict, infodict)
+        if wandblog:
+            wandb.log({"detailed_loss": loss.item()})
+
 
     ## Infologging
     for key in cuminfodict:

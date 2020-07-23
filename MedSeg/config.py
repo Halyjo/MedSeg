@@ -50,6 +50,7 @@ config = dict(
     drop_rate = 0.3,
     ## Weight on losses 1, 2 and 3. Weight on loss 4 is 1.
     alpha = 0.33,
+    alpha_decay_rate = 0.98,
     num_workers = 2,
     ## Type of info to use from labels:
     ## Options: ['segmentation', 'pixelcount', 'binary']
@@ -63,7 +64,7 @@ config = dict(
     loss_opts = {},
     ## Store model with metadata at given intervals.
     checkpoint_interval = 3,
-    init_2d_model_state = None,# "datasets/saved_states/runid_2009/VNet2d_runid_2009_epoch59.pth",
+    init_2d_model_state = "datasets/saved_states/runid_3005/VNet2d_runid_3005_epoch74.pth",
     init_model_state = None, #"datasets/saved_states/ResUnet_runid_12_epoch30.pth",
 )
 

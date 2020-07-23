@@ -120,6 +120,7 @@ class ImageViewer():
             os.path.join(self.src_path, "slices/slice_{:05}.npy".format(self._available[idx])),
             os.path.join(self.src_path, "labels_{}/segmentation_{:05}.npy".format(focus, self._available[idx])),
             os.path.join(self.src_path, "pred_{}/prediction_{:05}_epoch001_focus{}.npy".format(focus, self._available[idx], focus)),
+            os.path.join(self.src_path, "figures/prediction_{:05}_epoch040_focus{}.npy".format(self._available[idx], focus)),
         ]
         path_dict = {}
         for k, p in zip(keys, paths):
@@ -170,11 +171,17 @@ class ImageViewer():
         slice_list.extend([np.load(p) for p in paths.values()])
         names.extend(list(paths.keys()))
         for i, img in enumerate(slice_list):
+            if i%3==0:
+                vmin = -200
+                vmax = 200
+            else:
+                vmin = 0
+                vmax = 1
             ax[i].set_title(names[i])
             if replace:
                 ax[i].images[0].set_array(img)
             else:
-                ax[i].imshow(img, cmap='magma')
+                ax[i].imshow(img, cmap='magma', vmin=vmin, vmax=vmax)
             ax[i].axis('off')
         return fig
 

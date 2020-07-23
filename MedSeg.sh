@@ -3,10 +3,9 @@
 
 cd MedSeg/
 python controller2d.py \
-    --mode train \
-    --focus lesion \
+    --mode test \
+    --focus liver \
     --seed 0 \
-    --runid 3003 \
-    --label_type segmentation
-# python controller2d.py --mode train --focus lesion --seed 0 --runid 4000
+    --runid 3005 \
+    --label_type pixelcount
 # python controller3d.py --mode train --focus liver --seed 0 --runid 1003
