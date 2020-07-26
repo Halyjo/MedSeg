@@ -46,9 +46,9 @@ class ImageViewer():
         """Indices of all images for which a prediction has been stored."""
         if self._available is None:
             pred_slices = os.listdir(os.path.join(self.src_path, f"pred_{focus}/"))
-            pred_slices = [s for s in pred_slices if len(s)>21]
+            pred_slices = [s for s in pred_slices if len(s)>1]
             labs = os.listdir(os.path.join(self.src_path, f"labels_{focus}/"))
-            labs = [s for s in labs if len(s)>21]
+            labs = [s for s in labs if len(s)>1]
             if self.only_available:
                 pred_indices = set([int(name.strip(".npy").split("_")[1]) for name in pred_slices])
                 lab_indices = set([int(name.strip(".npy").split("_")[1]) for name in labs])
@@ -119,8 +119,9 @@ class ImageViewer():
         paths = [
             os.path.join(self.src_path, "slices/slice_{:05}.npy".format(self._available[idx])),
             os.path.join(self.src_path, "labels_{}/segmentation_{:05}.npy".format(focus, self._available[idx])),
+            os.path.join(self.src_path, "pred_{}/prediction_{:05}.npy".format(focus, self._available[idx])),
             os.path.join(self.src_path, "pred_{}/prediction_{:05}_epoch001_focus{}.npy".format(focus, self._available[idx], focus)),
-            os.path.join(self.src_path, "figures/prediction_{:05}_epoch040_focus{}.npy".format(self._available[idx], focus)),
+            # os.path.join(self.src_path, "figures/prediction_{:05}_epoch040_focus{}.npy".format(self._available[idx], focus)),
         ]
         path_dict = {}
         for k, p in zip(keys, paths):

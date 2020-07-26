@@ -12,7 +12,7 @@ from dataloaders import LiTSDataset, LiTSDataset2d, Testset
 from preprocessing import preprocess3d
 from torch.utils.data import DataLoader
 import torch
-from model import VNet2d, TverskyLoss, DiceLoss, MSEPixelCountLoss, DeepVNet2d
+from model import VNet2dAsDrawn, TverskyLoss, DiceLoss, MSEPixelCountLoss, DeepVNet2d, VNet2d
 from train import train_one_epoch
 from test import test_one_epoch
 import wandb
@@ -33,7 +33,7 @@ def controller_2d():
     print("Starting...")
     
     ## Load data
-    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"])
+    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"], data_limit=config["data_limit"])
     workers = config["num_workers"]
     
     ## Split data into train and test
@@ -42,7 +42,7 @@ def controller_2d():
     len_test = len(full_dataset) - len_train
     tr_set, te_set = torch.utils.data.random_split(full_dataset, (len_train, len_test))
     ## Init and load model if specified in config
-    net = VNet2d(drop_rate=config["drop_rate"])
+    net = VNet2dAsDrawn(drop_rate=config["drop_rate"])
     # net = DeepVNet2d(drop_rate=config["drop_rate"])
 
     ## Load model if specified in config
@@ -127,39 +127,39 @@ def controller_2d():
                         "config": config,
                         }, state_dict_path)
 
-            # torch.save(net.state_dict(), state_dict_path)
             ## Store example prediction
-            imageidx = torch.randint(0, len(te_set), (1,))
-            ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
-                                   num_workers=workers, pin_memory=True)
-            test_one_epoch(net, ex_loader, device, epoch, epochlength,
-                           wandblog=False, dst_format='npy', dst_path=config["dst2d_fig_path"])
+            # imageidx = torch.randint(0, len(te_set), (1,))
+            # ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
+            #                        num_workers=workers, pin_memory=True)
+            # test_one_epoch(net, ex_loader, device, epoch, epochlength,
+            #                wandblog=False, dst_format='npy', dst_path=config["dst2d_fig_path"])
         print()
 
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", help="train: Training and computing predictions.\ntest: \
-        Only computing predictions using model specified as init_model_state in config.py.",
-        default='train', choices=('test', 'train'))
-    parser.add_argument("--focus", help="Which segmentation maps to use. Segment out livers or lesions.",
-        default='train', choices=('liver', 'lesion'))
-    parser.add_argument("--seed", type=int, help="Make code reproducible by setting a seed.", default=None)
-    parser.add_argument("--runid", type=int, help="Id number for current run to distiguish saved states.")
-    parser.add_argument("--label_type", choices=['segmentation', 'pixelcount', 'binary'], 
-                        help="What information to apply from the labels. \
-                            Eg. if binary, only image level information is \
-                            provided to the network during training.",
-                        default='segmentation')
-    args = parser.parse_args()
-    if args.seed is not None:
-        utils.ensure_reproducibility(args.seed)
+    # import argparse
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--mode", help="train: Training and computing predictions.\ntest: \
+    #     Only computing predictions using model specified as init_model_state in config.py.",
+    #     default='train', choices=('test', 'train'))
+    # parser.add_argument("--focus", help="Which segmentation maps to use. Segment out livers or lesions.",
+    #     default='train', choices=('liver', 'lesion'))
+    # parser.add_argument("--seed", type=int, help="Make code reproducible by setting a seed.", default=None)
+    # parser.add_argument("--runid", type=int, help="Id number for current run to distiguish saved states.")
+    # parser.add_argument("--label_type", choices=['segmentation', 'pixelcount', 'binary'], 
+    #                     help="What information to apply from the labels. \
+    #                           Eg. if binary, only image level information is \
+    #                           provided to the network during training.",
+    #                     default='segmentation')
+    # args = parser.parse_args()
     
     ## Override prespecified config if arguments are given from commandline.
-    config["runid"] = args.runid
-    config["focus"] = args.focus
-    config["mode"] = args.mode
-    config["label_type"] = args.label_type
+    # config["runid"] = args.runid
+    # config["label_type"] = args.label_typeæ
+    # config["focus"] = args.focus
+    # config["mode"] = args.mode
+
+    if config["seed"] is not None:
+        utils.ensure_reproducibility(config["seed"])
 
     controller_2d()

@@ -1,7 +1,7 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: medsegliverweakpred
+  name: medseg2
 spec:
   template:
     spec:

@@ -7,17 +7,19 @@ Modified verison of code copied from source:
 
 import os
 # import torch
-#######################################
-################# RunID ###############
-#######################################
 config = dict(
     ###################################
     ############# Project #############
     ###################################
     project="MedSeg",
-    runid = 0,
+    runid = 2013,
     focus = 'liver',  ## Must be 'liver' or 'lesion'
     mode = 'train',  ## Must be 'train' or 'test'
+    ## Type of info to use from labels:
+    ## Options: ['segmentation', 'pixelcount', 'binary']
+    label_type = 'pixelcount',
+    seed = 0,
+    data_limit = None,
     ###################################
     ########## Main datapaths #########
     ###################################
@@ -52,9 +54,6 @@ config = dict(
     alpha = 0.33,
     alpha_decay_rate = 0.98,
     num_workers = 2,
-    ## Type of info to use from labels:
-    ## Options: ['segmentation', 'pixelcount', 'binary']
-    label_type = 'segmentation',
     ## DataLoader does not support any more yet,
     batch_size = 5,
     max_epochs = 200,
@@ -64,7 +63,7 @@ config = dict(
     loss_opts = {},
     ## Store model with metadata at given intervals.
     checkpoint_interval = 3,
-    init_2d_model_state = "datasets/saved_states/runid_3005/VNet2d_runid_3005_epoch74.pth",
+    init_2d_model_state = None, #"datasets/saved_states/runid_3005/VNet2d_runid_3005_epoch74.pth",
     init_model_state = None, #"datasets/saved_states/ResUnet_runid_12_epoch30.pth",
 )
 

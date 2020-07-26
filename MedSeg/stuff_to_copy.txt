@@ -1,14 +1,8 @@
-README.md
-controller3d.py
-controller2d.py
 config.py
+controller2d.py
 dataloaders.py
-metrics.py
 model
-monitor
-requirements.txt
-saved
+metrics.py
 train.py
 test.py
 utils
-config

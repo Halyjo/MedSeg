@@ -83,7 +83,7 @@ class LiTSDataset(Dataset):
 class LiTSDataset2d(Dataset):
     """LiTS dataset converted to separate 2d slices."""
     _options_focus = ['liver', 'lesion']
-    def __init__(self, datapath, focus="liver", max_length=None, transform=None, return_indices=False):
+    def __init__(self, datapath, focus="liver", data_limit=None, transform=None, return_indices=False):
         """
             Arguments
             ---------
@@ -95,7 +95,7 @@ class LiTSDataset2d(Dataset):
                 [focus] : ['liver', 'lesion']
                     Default: 'liver'
                     What segmentation labels to use.
-                [max_length] : int
+                [data_limit] : int
                     Number of samples to use.
                 [transform] : list
                     Transforms to apply to data.
@@ -109,17 +109,17 @@ class LiTSDataset2d(Dataset):
         self.slicepath = os.path.join(datapath, "slices/")
         self.slicenames = os.listdir(self.slicepath)
         self.store_indices = [int(name.strip(".npy").split("_")[1]) for name in self.slicenames]
-        self.max_length = max_length
+        self.data_limit = data_limit
         self.focus = focus
         self.labpath = os.path.join(datapath, f"labels_{focus}/")
         self.labnames = os.listdir(self.labpath)
         self.transform = transform
         
     def __len__(self):
-        if self.max_length is None:
+        if self.data_limit is None:
             return len(self.slicenames)
         else:
-            return self.max_length
+            return self.data_limit
 
     def __getitem__(self, idx):
         """
@@ -147,7 +147,7 @@ class LiTSDataset2d(Dataset):
 def test_LiTSDataset2d():
     batch_size = 3
     config["runid"] = 0
-    dataset = LiTSDataset2d("datasets/preprocessed_2d/", max_length=25)
+    dataset = LiTSDataset2d("datasets/preprocessed_2d/", data_limit=25)
     dataloader = DataLoader(dataset, batch_size=batch_size)
     
     ## A few assertions about shapes of output
