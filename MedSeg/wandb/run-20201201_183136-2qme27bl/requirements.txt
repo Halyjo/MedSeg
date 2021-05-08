@@ -63,7 +63,7 @@ psutil==5.7.0
 ptyprocess==0.6.0
 py==1.9.0
 pycparser==2.20
-pygments==2.6.1
+pygments==2.7.4
 pylint==2.5.3
 pyparsing==2.4.7
 pytest-shutil==1.7.0
