@@ -52,30 +52,46 @@ def test_one_epoch(net, dataloader, device, epoch, epochlength, wandblog=True, d
         "test_iou": [],
         "test_dice_numerator": [],
         "test_dice_denominator": [],
+        "test_classification_accuracy": [],
         # "test_conmat": [],
     }
 
     for i, sample in enumerate(dataloader):
         vol = sample['vol'].to(device, non_blocking=True)
-        lab = sample['lab'].to(device, non_blocking=True)
-        pred = torch.round(net(vol))
-        # onehot_lab = utils.one_hot(lab, nclasses=3)
+        lab_seg = sample['lab'].to(device, non_blocking=True)
+        pred_soft = net(vol)
+        pred = torch.round(pred_soft)
+        # onehot_lab = utils.one_hot(lab_seg, nclasses=3)
 
         ## Log metrics
-        metrics = Metrics(pred, lab, mode='test')
+        metrics = Metrics(pred, lab_seg, mode='test')
         infodict = metrics.get_metric_dict()
         for key in infodict:
             infodict[key] = infodict[key].detach().cpu().numpy()
         infodict.update({"epoch": epoch})
 
         utils.update_cumu_dict(cuminfodict, infodict)
-        
 
-        ## Store predictions
+        ## Classification accuracy
+        if (config["label_type"] == "binary") and wandblog:
+            pred = pred.view(pred.size(0), -1).sum(-1) > 0
+            lab = lab_seg.view(lab_seg.size(0), -1).sum(-1) > 0
+            acc = (pred == lab).float().mean().detach().cpu().numpy()
+            wandb.log({"Test Positive Predictions": pred.sum(), "Test Positive Labels": lab.sum(), "Test Accuracy": float(acc)})
+
+        ## Store prediction
         if dst_path is not None:
             # to_store = torch.cat([vol, lab, pred])
-            utils.store(pred, dst_path, sample['store_idx'],
+            utils.store(pred_soft, dst_path, sample['store_idx'],
                         format=dst_format, epoch=epoch, focus=config["focus"])
+            if wandblog:
+                for i in range(pred_soft.size(0)):
+                    wandb.log({"Example Prediction": [wandb.Image(pred_soft[i, 0, ...].detach().cpu().numpy()*255,
+                                                                  caption="Prediction "+str(config["runid"])+str(epoch)+str(sample["store_idx"][i]))]})
+                    wandb.log({"Example Image": [wandb.Image(vol[i, 0, ...].cpu().numpy()*255, 
+                                                             caption="Image "+str(config["runid"])+str(epoch)+str(sample["store_idx"][i]))]})
+                    wandb.log({"Example Label": [wandb.Image(lab_seg[i, 0, ...].cpu().numpy()*255, 
+                                                             caption="Label "+str(config["runid"])+str(epoch)+str(sample["store_idx"][i]))]})
     ## Infologging
     for key in cuminfodict:
         cuminfodict[key] = np.mean(cuminfodict[key], axis=0)

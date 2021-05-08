@@ -1,0 +1,35 @@
+project: MedSeg
+runid: 0
+focus: liver
+mode: test
+label_type: segmentation
+seed: 2
+data_limit: None
+srcpath: datasets/original
+dst_path: datasets/preprocessed_2d
+upper: 200
+lower: -200
+size: 48
+down_scale: 1
+expand_slice: 20
+slice_thickness: 1
+train_proportion: 0.8
+drop_rate: 0.3
+alpha: 0.33
+alpha_decay_rate: 0.98
+num_workers: 2
+batch_size: 5
+max_epochs: 200
+optim_opts:
+  lr: 0.001
+lr_decay_rate: 0.9
+loss_opts: null
+checkpoint_interval: 3
+init_2d_model_state: datasets/saved_states/runid_2013/VNet2d_runid_2013_epoch98.pth
+init_model_state: None,
+dst2d_slices_path: os.path.join(config["dst_2d_path"], 'slices/')
+dst2d_labels_liver_path: os.path.join(config["dst_2d_path"], 'labels_liver/')
+dst2d_labels_lesion_path: os.path.join(config["dst_2d_path"], 'labels_lesion/')
+dst2d_pred_liver_path: os.path.join(config["dst_2d_path"], 'pred_liver/')
+dst2d_pred_lesion_path: os.path.join(config["dst_2d_path"], 'pred_lesion/')
+dst2d_fig_path: os.path.join(config["dst_2d_path"], "figures/")

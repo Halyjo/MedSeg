@@ -10,22 +10,24 @@ from pprint import pprint
 from config import config
 from dataloaders import LiTSDataset, LiTSDataset2d, Testset
 from preprocessing import preprocess3d
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 import torch
-from model import VNet2dAsDrawn, TverskyLoss, DiceLoss, MSEPixelCountLoss, DeepVNet2d, VNet2d
+from model import VNet2dAsDrawn, TverskyLoss, WeightedBCELoss, DiceLoss, MSEPixelCountLoss, DeepVNet2d, VNet2d, VGG, UNet, TestNet
 from train import train_one_epoch
 from test import test_one_epoch
 import wandb
 from torchsummary import summary
 import SimpleITK as sitk
 import pandas as pd
+# import hydra
 
 
 ## Use GPU if available
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def controller_2d():
+# @hydra.main(config_name="config.yaml")
+def controller_2d(): ## (cfg)
     """
     Controller function for training and testing VNet
     on Volumetric CT images of livers with and without lesions.
@@ -33,30 +35,44 @@ def controller_2d():
     print("Starting...")
     
     ## Load data
-    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"], data_limit=config["data_limit"])
+    full_dataset = LiTSDataset2d(config["dst_2d_path"], focus=config["focus"], data_limit= config["data_limit"])
     workers = config["num_workers"]
     
     ## Split data into train and test
     train_proportion = config["train_proportion"]
     len_train = int(len(full_dataset) * train_proportion)
     len_test = len(full_dataset) - len_train
-    tr_set, te_set = torch.utils.data.random_split(full_dataset, (len_train, len_test))
+    tr_set, te_set = random_split(full_dataset, (len_train, len_test))
+    
     ## Init and load model if specified in config
     net = VNet2dAsDrawn(drop_rate=config["drop_rate"])
+    # net = TestNet()
+    # net = UNet(drop_rate=config["drop_rate"])
+    # net = VNet2d(drop_rate=config["drop_rate"])
+    # net = VGG()  ## Too big to run
     # net = DeepVNet2d(drop_rate=config["drop_rate"])
 
     ## Load model if specified in config
     print(config["init_2d_model_state"])
     if config["init_2d_model_state"] is not None:
         print("Attemt fetching of state dict at: ", config["init_2d_model_state"])
-        state_dict = torch.load(config["init_2d_model_state"])["model_state_dict"]
+        state_dict = torch.load(config["init_2d_model_state"])["model_state_dict"] # , map_location=torch.device("cpu")
         net.load_state_dict(state_dict)
         print("Successfully loaded net")
     net.to(device)
+    
+    ## Make summary
+    summary(net, (1, 512, 512))
+
     ## If only testing, run through net, get resulting metrics and store predictions.
     if config["mode"] == 'test':
         net.eval()
+        
+        # ## Small subset
+        # n = 50
+        # tr_set, _ = random_split(full_dataset, (n, len(full_dataset)-n))
 
+        ## Training set
         tr_dataloader = DataLoader(tr_set, num_workers=workers, pin_memory=True)
         if not os.path.exists(config[f"dst2d_pred_{config['focus']}_path"]):
             os.mkdir(config[f"dst2d_pred_{config['focus']}_path"])
@@ -66,12 +82,13 @@ def controller_2d():
         tr_df.to_csv(os.path.join(config["dst_2d_path"],
                                   "tr_metrics_{}_{}_run{:02}.csv".format(config["label_type"], config["focus"], config["runid"])))
 
-        te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
-        test_info = test_one_epoch(net, te_dataloader, device, 
-                                   1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config['focus']}_path"])
-        te_df = pd.DataFrame(test_info, index=[0])
-        te_df.to_csv(os.path.join(config["dst_2d_path"], 
-                                  "te_metrics_{}_{}_run{:02}.csv".format(config["label_type"], config["focus"], config["runid"])))
+        ## Test set
+        # te_dataloader = DataLoader(te_set, num_workers=workers, pin_memory=True)
+        # test_info = test_one_epoch(net, te_dataloader, device, 
+        #                            1, 1, wandblog=False, dst_path=config[f"dst2d_pred_{config['focus']}_path"])
+        # te_df = pd.DataFrame(test_info, index=[0])
+        # te_df.to_csv(os.path.join(config["dst_2d_path"], 
+        #                           "te_metrics_{}_{}_run{:02}.csv".format(config["label_type"], config["focus"], config["runid"])))
         exit()
 
     ## Monitor process with weights and biases
@@ -88,7 +105,11 @@ def controller_2d():
         # critic = TverskyLoss(**config["loss_opts"])
     elif config["label_type"] == 'pixelcount':
         critic = MSEPixelCountLoss(**config["loss_opts"])
+    elif config["label_type"] == 'binary':
+        critic = torch.nn.BCELoss()
+        # critic = WeightedBCELoss(weights=[0.8, 0.2])
     
+    ## Training loop
     for epoch in range(config["max_epochs"]):
         print(f"Epoch: {epoch}.")
 
@@ -102,7 +123,7 @@ def controller_2d():
         epochlength = len(tr_dataloader) + len(te_dataloader)
 
         print("Training ...")
-        train_info = train_one_epoch(net, optimizer, critic, 
+        train_info = train_one_epoch(net, optimizer, critic,
                                      tr_dataloader, device, epoch, epochlength)
 
         print("Testing ...")
@@ -128,11 +149,12 @@ def controller_2d():
                         }, state_dict_path)
 
             ## Store example prediction
-            # imageidx = torch.randint(0, len(te_set), (1,))
-            # ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
-            #                        num_workers=workers, pin_memory=True)
-            # test_one_epoch(net, ex_loader, device, epoch, epochlength,
-            #                wandblog=False, dst_format='npy', dst_path=config["dst2d_fig_path"])
+            imageidx = torch.randint(0, len(te_set), (1,))
+            ex_loader = DataLoader(torch.utils.data.Subset(te_set, imageidx),
+                                   num_workers=workers, pin_memory=True)
+            test_one_epoch(net, ex_loader, device, epoch, epochlength,
+                           wandblog=True, dst_format='png', dst_path=config["dst2d_fig_path"])
+            print("done!")
         print()
 
 

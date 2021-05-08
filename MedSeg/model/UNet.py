@@ -14,33 +14,32 @@ import torch.nn.functional as F
 
 class UNet(nn.Module):
 
-    def __init__(self, dice=False):
-
+    def __init__(self, drop_rate, dice=False):
         super(UNet, self).__init__()
+        self.drop_rate = drop_rate
 
-        self.conv1_input =      nn.Conv2d(1, 64, 3, padding=1)
-        self.conv1 =            nn.Conv2d(64, 64, 3, padding=1)
-        self.conv2_input =      nn.Conv2d(64, 128, 3, padding=1)
-        self.conv2 =            nn.Conv2d(128, 128, 3, padding=1)
-        self.conv3_input =      nn.Conv2d(128, 256, 3, padding=1)
-        self.conv3 =            nn.Conv2d(256, 256, 3, padding=1)
-        self.conv4_input =      nn.Conv2d(256, 512, 3, padding=1)
-        self.conv4 =            nn.Conv2d(512, 512, 3, padding=1)
-        self.conv5_input =      nn.Conv2d(512, 1024, 3, padding=1)
-        self.conv5 =            nn.Conv2d(1024, 1024, 3, padding=1)
-
-        self.conv6_up =         nn.ConvTranspose2d(1024, 512, 2, 2)
-        self.conv6_input =      nn.Conv2d(1024, 512, 3, padding=1)
-        self.conv6 =            nn.Conv2d(512, 512, 3, padding=1)
-        self.conv7_up =         nn.ConvTranspose2d(512, 256, 2, 2)
-        self.conv7_input =      nn.Conv2d(512, 256, 3, padding=1)
-        self.conv7 =            nn.Conv2d(256, 256, 3, padding=1)
-        self.conv8_up =         nn.ConvTranspose2d(256, 128, 2, 2)
-        self.conv8_input =      nn.Conv2d(256, 128, 3, padding=1)
-        self.conv8 =            nn.Conv2d(128, 128, 3, padding=1)
-        self.conv9_up =         nn.ConvTranspose2d(128, 64, 2, 2)
-        self.conv9_input =      nn.Conv2d(128, 64, 3, padding=1)
-        self.conv9 =            nn.Conv2d(64, 64, 3, padding=1)
+        self.conv1_input =      nn.Sequential(nn.Conv2d(1, 64, 3, padding=1), nn.BatchNorm2d(64))
+        self.conv1 =            nn.Sequential(nn.Conv2d(64, 64, 3, padding=1), nn.BatchNorm2d(64))
+        self.conv2_input =      nn.Sequential(nn.Conv2d(64, 128, 3, padding=1), nn.BatchNorm2d(128))
+        self.conv2 =            nn.Sequential(nn.Conv2d(128, 128, 3, padding=1), nn.BatchNorm2d(128))
+        self.conv3_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(128, 256, 3, padding=1), nn.BatchNorm2d(256))
+        self.conv3 =            nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(256, 256, 3, padding=1), nn.BatchNorm2d(256))
+        self.conv4_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(256, 512, 3, padding=1), nn.BatchNorm2d(512))
+        self.conv4 =            nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(512, 512, 3, padding=1), nn.BatchNorm2d(512))
+        self.conv5_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(512, 1024, 3, padding=1), nn.BatchNorm2d(1024))
+        self.conv5 =            nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(1024, 1024, 3, padding=1), nn.BatchNorm2d(1024))
+        self.conv6_up =         nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.ConvTranspose2d(1024, 512, 2, 2), nn.BatchNorm2d(512))
+        self.conv6_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(1024, 512, 3, padding=1), nn.BatchNorm2d(512))
+        self.conv6 =            nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(512, 512, 3, padding=1), nn.BatchNorm2d(512))
+        self.conv7_up =         nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.ConvTranspose2d(512, 256, 2, 2), nn.BatchNorm2d(256))
+        self.conv7_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(512, 256, 3, padding=1), nn.BatchNorm2d(256))
+        self.conv7 =            nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(256, 256, 3, padding=1), nn.BatchNorm2d(256))
+        self.conv8_up =         nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.ConvTranspose2d(256, 128, 2, 2), nn.BatchNorm2d(128))
+        self.conv8_input =      nn.Sequential(nn.Dropout2d(p=self.drop_rate), nn.Conv2d(256, 128, 3, padding=1), nn.BatchNorm2d(128))
+        self.conv8 =            nn.Sequential(nn.Conv2d(128, 128, 3, padding=1), nn.BatchNorm2d(128))
+        self.conv9_up =         nn.Sequential(nn.ConvTranspose2d(128, 64, 2, 2), nn.BatchNorm2d(64))
+        self.conv9_input =      nn.Sequential(nn.Conv2d(128, 64, 3, padding=1), nn.BatchNorm2d(64))
+        self.conv9 =            nn.Sequential(nn.Conv2d(64, 64, 3, padding=1), nn.BatchNorm2d(64))
         self.conv9_output =     nn.Conv2d(64, 2, 1)
         
         if dice:

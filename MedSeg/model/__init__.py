@@ -5,3 +5,6 @@ from .DeepVNet2d import DeepVNet2d
 from .VNet2dAsDrawn import VNet2dAsDrawn
 from .NestedUNet import NestedUNet
 from .metrics import Metrics
+from .VGG import VGG
+from .UNet import UNet
+from .TestNet import TestNet

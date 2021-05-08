@@ -1,0 +1,4 @@
+{"detailed_loss": 1.1087208986282349, "_runtime": 14.399588346481323, "_timestamp": 1606897280.912635, "_step": 0}
+{"batch_accuracy": 1.0, "_runtime": 14.40538215637207, "_timestamp": 1606897280.918429, "_step": 1}
+{"detailed_loss": 1.1275575160980225, "_runtime": 26.395304441452026, "_timestamp": 1606897292.9083512, "_step": 2}
+{"batch_accuracy": 0.800000011920929, "_runtime": 26.399550437927246, "_timestamp": 1606897292.9125972, "_step": 3}

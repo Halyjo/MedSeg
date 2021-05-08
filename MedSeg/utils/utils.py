@@ -103,7 +103,7 @@ def store(img_batch, dst: str, idx: list, format=None, epoch:int=None, focus:str
 
     for i in range(img_batch.shape[0]):
         pred = img_batch[i, ...]
-        pred = pred.squeeze(dim=0)
+        pred = pred.squeeze(0)
         pred_np = pred.detach().cpu().numpy()
         name = "prediction_{:05}".format(idx[i])
         if epoch is not None:
@@ -118,7 +118,7 @@ def store(img_batch, dst: str, idx: list, format=None, epoch:int=None, focus:str
             np.save(os.path.join(dst, name), pred_np)
         elif format == 'png':
             plt.imshow(pred_np, cmap='gray')
-            plt.savefig(os.path.join(dst, name, f"_{i:02}"), dpi=300, format='png')
+            plt.savefig(os.path.join(dst, name + f"_{i:02}.png"), dpi=300)
             plt.close()
 
         print("Stored {} in {}".format(name, dst))
@@ -241,6 +241,33 @@ def ensure_reproducibility(seed):
     if torch.cuda.is_available():
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
+
+
+def harden_classification(pred):
+    """Convert soft classification matrix to hard by assigning
+    the value 1 to maximum along channel dimension (dim 1) and 0
+    to all others.
+
+    Arguments:
+        pred : torch.Tensor
+            shape: (N, C, H, W)
+                N: # Datapoints
+                C: # Channels
+                H: # Image hight
+                W: # Image width
+
+    Returns:
+        out: torch.Tensor
+            shape: same as input
+    """
+    N, C, H, W = pred.shape
+    out = torch.zeros_like(pred)
+    _, idx = torch.max(pred, dim=1)
+    n, h, w = torch.meshgrid(torch.arange(N),
+                          torch.arange(H),
+                          torch.arange(W))
+    out[n, idx, h, w] = 1
+    return out
 
 
 def conmat(pred, lab, n_classes=None):

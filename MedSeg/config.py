@@ -12,12 +12,14 @@ config = dict(
     ############# Project #############
     ###################################
     project="MedSeg",
-    runid = 2013,
+    runid = 1212202010,
     focus = 'liver',  ## Must be 'liver' or 'lesion'
     mode = 'train',  ## Must be 'train' or 'test'
     ## Type of info to use from labels:
     ## Options: ['segmentation', 'pixelcount', 'binary']
-    label_type = 'pixelcount',
+    label_type = 'binary',
+    erase_discriminative_features=False, ## only relevant for "binary" label type
+    tau = 0.7, ## theshold for erasing mask
     seed = 0,
     data_limit = None,
     ###################################
@@ -55,15 +57,15 @@ config = dict(
     alpha_decay_rate = 0.98,
     num_workers = 2,
     ## DataLoader does not support any more yet,
-    batch_size = 5,
-    max_epochs = 200,
+    batch_size = 4,
+    max_epochs = 300,
     ## Optimizer and loss,
-    optim_opts = {'lr': 0.01},
-    lr_decay_rate = 0.90,
+    optim_opts = {'lr': 0.005},
+    lr_decay_rate = 0.97,
     loss_opts = {},
     ## Store model with metadata at given intervals.
-    checkpoint_interval = 3,
-    init_2d_model_state = None, #"datasets/saved_states/runid_3005/VNet2d_runid_3005_epoch74.pth",
+    checkpoint_interval = 2,
+    init_2d_model_state = None, # "datasets/saved_states/runid_121220206/VNet2dAsDrawn_runid_121220206_epoch32.pth",# "datasets/saved_states/runid_121220205/VNet2dAsDrawn_runid_121220205_epoch18.pth",# 
     init_model_state = None, #"datasets/saved_states/ResUnet_runid_12_epoch30.pth",
 )
 
@@ -76,6 +78,7 @@ config.update(
     train_labels_path = os.path.join(config["srcpath"], 'train/seg/'),
     test_volumes_path = os.path.join(config["srcpath"], 'test/ct/'),
     test_labels_path = os.path.join(config["srcpath"], 'test/seg/'),
+
     ## For 3d
     dst_train_volumes_path = os.path.join(config["dstpath"], 'train/volumes/'),
     dst_test_volumes_path = os.path.join(config["dstpath"], 'test/volumes/'),

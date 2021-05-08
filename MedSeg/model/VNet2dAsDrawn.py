@@ -167,10 +167,9 @@ class VNet2dAsDrawn(nn.Module):
         )
         
         self.final = nn.Sequential(
-            nn.ConvTranspose2d(32, 1, 3, 1, padding=1),
-            nn.Sigmoid()
+            nn.ConvTranspose2d(32, 1, 3, 1, padding=1)
         )
-            
+        self.sigmoid = nn.Sigmoid()
 
         self.dp1 = nn.Dropout2d(self.drop_rate)
         self.dp2 = nn.Dropout2d(self.drop_rate)
@@ -197,8 +196,11 @@ class VNet2dAsDrawn(nn.Module):
             nn.Sigmoid()
         )
 
+        self.gap = nn.AdaptiveAvgPool2d(1)
+        # self.gmp = nn.AdaptiveAvgPool2d
 
-    def forward(self, inputs):
+
+    def forward(self, inputs, pooling=None):  ## pooling options: None, "gap"
         ## Encoding
         long_range1 = self.encoder_stage1(inputs) + inputs
         short_range1 = self.down_conv1(long_range1)
@@ -218,26 +220,31 @@ class VNet2dAsDrawn(nn.Module):
         ## Decoding
         outputs = self.decoder_stage1(long_range4) + short_range4
         outputs = self.dp4(outputs)
-        output1 = self.map1(outputs)
+        # output1 = self.map1(outputs)
         short_range7 = self.up_conv2(outputs)
 
         outputs = self.decoder_stage2(torch.cat([short_range7, long_range3], dim=1)) + short_range7
         outputs = self.dp5(outputs)
-        output2 = self.map2(outputs)
+        # output2 = self.map2(outputs)
         short_range8 = self.up_conv3(outputs)
 
         outputs = self.decoder_stage3(torch.cat([short_range8, long_range2], dim=1)) + short_range8
         outputs = self.dp6(outputs)
-        output3 = self.map3(outputs)
+        # output3 = self.map3(outputs)
         short_range9 = self.up_conv4(outputs)
 
         outputs = self.decoder_stage4(torch.cat([short_range9, long_range1], dim=1)) + short_range9
         output4 = self.final(outputs)
+        output4 = self.sigmoid(output4)
 
-        if self.training is True:
-            return output1, output2, output3, output4
-        else:
-            return output4
+        # if self.training is True:
+        #     return output1, output2, output3, output4
+        # else:
+        if pooling=="gap":
+            out = self.gap(output4)
+            return out.squeeze(3).squeeze(2), output4
+
+        return output4
 
     def print_shapes(self, inshape, **kwargs):
         """

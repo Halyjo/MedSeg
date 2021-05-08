@@ -4,6 +4,21 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
+class WeightedBCELoss(nn.Module):
+    def __init__(self, weights=None):
+        super().__init__()
+        if weights is not None:
+            assert len(weights) == 2
+            self.weights = weights
+        else:
+            self.weights = [1, 1]
+
+    def forward(self, pred, target):
+        loss = self.weights[1] * (target * torch.log(pred)) + \
+            self.weights[0] * ((1 - target) * torch.log(1 - pred))
+        return torch.neg(torch.mean(loss))
+
+
 class TverskyLoss(nn.Module):
     """
     Modified version of src copied from https://github.com/assassint2017/MICCAI-LITS2017
@@ -50,10 +65,32 @@ class BCELossBinary(nn.Module):
     """
     Binary cross entopy loss (occurance of lesion in image or not)
     given predictions and labels as images with binary values.
+
+        Arguments
+        ---------
+            mode : str among ["GAP", "GMP"]
+                Chose to use global average pooling or 
+                global max pooling.
+            **kwargs : key word arguments
+                Passed on to the BCEWithLogitsLoss instanciation.
+
     """
-    def __init__(self):
+    _mode_options = {"GAP", "GMP"}
+    def __init__(self, mode, **kwargs):
         super().__init__()
-        self.bce = torch.nn.BCEWithLogitsLoss
+        self.bce = torch.nn.BCEWithLogitsLoss(**kwargs)
+
+        msg = "mode must be among: {}".format(self._mode_options)
+        assert mode in self._mode_options, msg
+        self.mode = mode
+
+    def forward(self, pred, target):
+        if self.mode == "GAP":
+            pred = pred.view(pred.size(0), pred.size(1), -1).mean(-1)
+        elif self.mode == "GMP":
+            pred = pred.view(pred.size(0), pred.size(1), -1).max(-1)
+        target = target.view(target.size(0), -1).max(-1).values
+        return self.bce(pred.float(), target)
 
 
 class CELoss(nn.Module):

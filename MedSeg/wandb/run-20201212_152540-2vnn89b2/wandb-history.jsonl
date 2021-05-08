@@ -1,0 +1,6 @@
+{"preds": 0, "labs": 2, "Accuracy": 0.3333333432674408, "detailed_loss": [1.510145902633667], "_runtime": 2.4600441455841064, "_timestamp": 1607783142.6894894, "_step": 0}
+{"preds": 0, "labs": 3, "Accuracy": 0.0, "detailed_loss": [2.3986783027648926], "_runtime": 2.6582930088043213, "_timestamp": 1607783142.8877382, "_step": 1}
+{"preds": 0, "labs": 2, "Accuracy": 0.0, "detailed_loss": [1.5743352174758911], "_runtime": 2.790987730026245, "_timestamp": 1607783143.020433, "_step": 2}
+{"epoch": 0.0, "loss": 1.827719807624817, "train_FNR": 1.0, "train_FPR": 0.0, "train_RVD": -1.0, "train_dice": 4.444424121174961e-06, "train_dice_numerator": 0.0, "train_dice_denominator": 2.3333332538604736, "train_iou": 4.444424121174961e-06, "train_conmat": [[0.3333333432674408, 0.0], [2.3333332538604736, 0.0]], "_runtime": 2.8034756183624268, "_timestamp": 1607783143.0329208, "_step": 3}
+{"batch_accuracy": 1.0, "_runtime": 2.94478440284729, "_timestamp": 1607783143.1742296, "_step": 4}
+{"epoch": 0.0, "test_fnr": 0.17700143158435822, "test_fpr": 0.5242670774459839, "test_voe": 0.7012685537338257, "test_rvd": 0.7299593091011047, "test_dice": 0.4600357711315155, "test_iou": 0.2987314760684967, "test_dice_numerator": 81764.0, "test_dice_denominator": 177734.0, "test_classification_accuracy": NaN, "_runtime": 2.9896256923675537, "_timestamp": 1607783143.219071, "_step": 5}
