@@ -78,7 +78,7 @@ torch==1.5.1
 torchvision==0.6.1
 tornado==6.0.4
 tqdm==4.46.1
-urllib3==1.25.9
+urllib3==1.26.5
 wandb==0.9.1
 watchdog==0.10.2
 wcwidth==0.2.4
