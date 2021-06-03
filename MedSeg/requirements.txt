@@ -37,7 +37,7 @@ pandas==0.23.4
 path==13.1.0
 path.py==12.4.0
 pathtools==0.1.2
-Pillow==7.1.2
+Pillow==8.1.1
 pluggy==0.13.1
 promise==2.3
 psutil==5.7.0
